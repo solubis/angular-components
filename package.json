@@ -1,0 +1,25 @@
+{
+	"name": "solubis-components",
+	"version": "0.0.1",
+	"description": "How to setup and write next generation JavaScript (ES6 / ES2015, ES7 / ES2016 etc) with the Babel compiler. For an https://egghead.io lesson.",
+	"scripts": {
+		"postinstall": "tsd install"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/solubis/components.git"
+	},
+	"author": "Jerzy Błaszczyk (solubis.com)",
+	"license": "Unlicense",
+	"bugs": {
+		"url": "https://github.com/solubis/components/issues"
+	},
+	"devDependencies": {
+		"typescript": "1.6.x",
+		"tsd": "*"
+	},
+	"dependencies": {
+		"jsrsasign": "*",
+		"moment": "*"
+	}
+}
