@@ -1,4 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
 declare class ConfigServiceProvider implements ng.IServiceProvider {
     private config;
     constructor();

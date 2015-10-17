@@ -1,4 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
 var moment = require('moment');
 var DATE_FORMAT = 'DD.MM.YYYY HH:mm:ss';
 /**

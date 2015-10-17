@@ -1,4 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
 (function (PermissionCheckType) {
     PermissionCheckType[PermissionCheckType["One"] = 0] = "One";
     PermissionCheckType[PermissionCheckType["All"] = 1] = "All";

@@ -1,4 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
 var SecurityService_1 = require('./SecurityService');
 /*@ngInject*/
 function AuthorizeDirective($security) {

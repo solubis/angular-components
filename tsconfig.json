@@ -11,20 +11,26 @@
         "outDir": "dist"
     },
     "filesGlob": [
-        "./src/**/*.ts"
+        "src/**/*.ts",
+        "typings/tsd.d.ts",
+        "!dist/**",
+        "!node_modules/**"
     ],
     "files": [
-        "./src/core.ts",
-        "./src/core/ConfigService.ts",
-        "./src/core/HttpInterceptor.ts",
-        "./src/core/RestService.ts",
-        "./src/core/SettingsService.ts",
-        "./src/core/UtilsService.ts",
-        "./src/security.ts",
-        "./src/security/AuthorizeDirective.ts",
-        "./src/security/OAuthInterceptor.ts",
-        "./src/security/OAuthTokenService.ts",
-        "./src/security/QueryStringService.ts",
-        "./src/security/SecurityService.ts"
-    ]
+        "src/core.ts",
+        "src/core/ConfigService.ts",
+        "src/core/HttpInterceptor.ts",
+        "src/core/RestService.ts",
+        "src/core/SettingsService.ts",
+        "src/core/UtilsService.ts",
+        "src/decorators.ts",
+        "src/security.ts",
+        "src/security/AuthorizeDirective.ts",
+        "src/security/OAuthInterceptor.ts",
+        "src/security/OAuthTokenService.ts",
+        "src/security/QueryStringService.ts",
+        "src/security/SecurityService.ts",
+        "typings/tsd.d.ts"
+    ],
+    "exclude": []
 }

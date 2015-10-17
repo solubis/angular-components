@@ -1,4 +1,3 @@
-/// <reference path="../typings/tsd.d.ts" />
 /**
  * Module with services for error handler, local storage settings and small utils
  */

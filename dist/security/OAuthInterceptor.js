@@ -1,4 +1,6 @@
-/// <reference path="../../typings/tsd.d.ts" />
+/**
+ * HTTP Interceptor for global OAuth handling
+ */
 /*@ngInject*/
 var OAuthHttpInterceptor = (function () {
     function OAuthHttpInterceptor($rootScope, $q, $oauthToken) {

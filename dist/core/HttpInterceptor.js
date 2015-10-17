@@ -1,4 +1,3 @@
-/// <reference path='../../typings/tsd.d.ts' />
 /**
  * HTTP Interceptor for global error handling
  */

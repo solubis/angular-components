@@ -1,5 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
-
 import QueryStringService from './QueryStringService';
 import OAuthTokenService from './OAuthTokenService';
 

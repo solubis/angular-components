@@ -1,4 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
 declare class QueryStringService {
     constructor();
     extract(maybeUrl: any): any;

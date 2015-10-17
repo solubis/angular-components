@@ -16,6 +16,9 @@
     },
     "moment/moment-node.d.ts": {
       "commit": "98d3168c2c570352a3a7393788e2ec9fbb08ade6"
+    },
+    "es6-shim/es6-shim.d.ts": {
+      "commit": "381479952e9725f6e14e7974f082b5e11585bf0b"
     }
   }
 }

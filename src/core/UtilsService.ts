@@ -1,5 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
-
 import * as moment from 'moment';
 
 const DATE_FORMAT = 'DD.MM.YYYY HH:mm:ss';

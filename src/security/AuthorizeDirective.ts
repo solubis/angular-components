@@ -1,5 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
-
 import { SecurityService, AccessStatus, PermissionCheckType } from './SecurityService';
 
 interface Attributes extends ng.IAttributes {

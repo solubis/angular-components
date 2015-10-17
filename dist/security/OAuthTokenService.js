@@ -1,4 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
 /*@ngInject*/
 var OAuthTokenService = (function () {
     function OAuthTokenService($location, $window, $settings, config) {

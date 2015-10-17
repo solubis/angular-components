@@ -1,4 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
 /**
  * REST communication and error handling
  */

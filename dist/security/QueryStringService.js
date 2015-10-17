@@ -1,4 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
 /*@ngInject*/
 var QueryStringService = (function () {
     function QueryStringService() {

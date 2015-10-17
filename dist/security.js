@@ -1,4 +1,3 @@
-/// <reference path="../typings/tsd.d.ts" />
 var SecurityService_1 = require('./security/SecurityService');
 var OAuthTokenService_1 = require('./security/OAuthTokenService');
 var OAuthInterceptor_1 = require('./security/OAuthInterceptor');

@@ -1,5 +1,3 @@
-/// <reference path="../typings/tsd.d.ts" />
-
 import { SecurityServiceProvider } from './security/SecurityService';
 import { OAuthTokenServiceProvider } from './security/OAuthTokenService';
 import OAuthInterceptor from './security/OAuthInterceptor';

@@ -1,4 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
 /**
  * Saving and loading settings from local storage
  */
