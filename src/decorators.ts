@@ -1,20 +1,14 @@
 import * as angular from 'angular';
 
-const app = angular.module('components', [
-    'ui.router'
-]);
+let providers = {
+    services: [],
+    filters: [],
+    directives: []
+};
 
-function Run() {
-    return function decorator(target, key, descriptor) {
-        app.run(descriptor.value);
-    };
-}
+let components = [];
 
-function Config() {
-    return function decorator(target, key, descriptor) {
-        app.config(descriptor.value);
-    };
-}
+let routes = [];
 
 function Service(options) {
     return function decorator(target) {
@@ -22,64 +16,72 @@ function Service(options) {
         if (!options.name) {
             throw new Error('@Service() must contain name property!');
         }
-        app.service(options.name, target);
+        providers.services.push({ name: options.name, fn: target });
     };
 }
 
-function Filter(filter) {
+function Filter(options) {
     return function decorator(target, key, descriptor) {
-        filter = filter ? filter : {};
-        if (!filter.name) {
+        options = options ? options : {};
+        if (!options.name) {
             throw new Error('@Filter() must contain name property!');
         }
-        app.filter(filter.filterName, descriptor.value);
+        providers.filters.push({ name: options.name, fn: descriptor.value });
     };
 }
 
 function Inject(...dependencies) {
-    return function decorator(target) {
-        target.$inject = dependencies;
+    return function decorator(target, key?, descriptor?) {
+        if (descriptor) {
+            descriptor.value.$inject = dependencies;
+        } else {
+            target.$inject = dependencies;
+        }
     };
 }
 
-function Component(component) {
+
+
+function Component(options) {
     return function decorator(target) {
-        component = component ? component : {};
-        if (!component.name) {
+        options = options ? options : {};
+        if (!options.selector) {
             throw new Error('@Component() must contain selector property!');
         }
 
         if (target.$initView) {
-            target.$initView(component.name);
+            target.$initView(options.selector);
         }
-
+        target.$options = options;
         target.$isComponent = true;
+
+        components.push(target);
     };
 }
 
-function View(view) {
-    let options = view ? view : {};
-    const defaults = {
-        templateUrl: options.templateUrl,
-        restrict: 'E',
-        scope: {},
-        bindToController: true,
-        controllerAs: 'ctrl'
-    };
+function View(options) {
     return function decorator(target) {
+        options = options ? options : {};
+
         if (target.$isComponent) {
             throw new Error('@View() must be placed after @Component()!');
         }
 
-        target.$initView = function(name) {
-            name = pascalCaseToCamelCase(name);
-            name = dashCaseToCamelCase(name);
+        target.$initView = function(selector) {
+            const defaults = {
+                templateUrl: options.templateUrl,
+                restrict: 'E',
+                scope: {},
+                bindToController: true,
+                controllerAs: 'ctrl'
+            };
+
+            let name = toCamelCase(selector);
 
             options.bindToController = options.bindToController || options.bind || {};
+            options.controller = target;
 
-            app.directive(name, function() {
-                return Object.assign(defaults, { controller: target }, options);
-            });
+            providers.directives.push({ name, fn: () => angular.extend(defaults, options) });
         };
 
         target.$isView = true;
@@ -88,32 +90,57 @@ function View(view) {
 
 function Directive(options) {
     return function decorator(target) {
-        const directiveName = dashCaseToCamelCase(options.selector);
-        app.directive(directiveName, target.directiveFactory);
+        let name = toCamelCase(options.selector);
+        providers.directives.push({ name, fn: target.directiveFactory });
     };
 }
 
-function RouteConfig(stateName, options) {
+
+function RouteConfig(options) {
     return function decorator(target) {
-        app.config(['$stateProvider', ($stateProvider) => {
-            $stateProvider.state(stateName, Object.assign({
-                controller: target,
-                controllerAs: 'vm'
-            }, options));
-        }]);
-        app.controller(target.name, target);
+        routes.push({ name: options.name }, options);
     };
 }
 
-function pascalCaseToCamelCase(str) {
-    return str.charAt(0).toLowerCase() + str.substring(1);
-}
-
-function dashCaseToCamelCase(string) {
+function toCamelCase(string) {
+    string = string.charAt(0).toLowerCase() + string.substring(1);
     return string.replace(/-([a-z])/ig, function(all, letter) {
         return letter.toUpperCase();
     });
 }
 
-export default app;
-export {Component, View, RouteConfig, Inject, Run, Config, Service, Filter, Directive};
+function defineModuleForTarget(target) {
+    let name = toCamelCase(target.$options.selector);
+    let module = angular.module(name, target.$options.dependencies || []);
+
+    module.run(target.prototype.run || (() => { }));
+    module.config(target.prototype.config || (() => { }));
+
+    return module;
+}
+
+function bootstrap(component) {
+    angular.element(document).ready(() => {
+        let module = defineModuleForTarget(component);
+
+        for (let directive of providers.directives) {
+            module.directive(directive.name, directive.fn);
+        }
+
+        for (let service of providers.services) {
+            module.service(service.name, service.fn);
+        }
+
+        for (let target of components) {
+            if (target.$options.selector !== component.$options.selector) {
+                defineModuleForTarget(target);
+            }
+        }
+
+        let selector = document.querySelector(component.$options.selector);
+
+        angular.bootstrap(selector, [module.name], {});
+    });
+}
+
+export {Component, View, RouteConfig, Inject, Service, Filter, Directive, bootstrap};
