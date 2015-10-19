@@ -23,7 +23,6 @@
         "src/core/RestService.ts",
         "src/core/SettingsService.ts",
         "src/core/UtilsService.ts",
-        "src/decorators.ts",
         "src/security.ts",
         "src/security/AuthorizeDirective.ts",
         "src/security/OAuthInterceptor.ts",

@@ -46,7 +46,7 @@ function Component(component) {
     return function decorator(target) {
         component = component ? component : {};
         if (!component.name) {
-            throw new Error('@Component() must contain selector property!');
+            throw new Error('@Component() must contain name property!');
         }
 
         if (target.$initView) {
