@@ -122,6 +122,12 @@ function bootstrap(component) {
                 defineModuleForTarget(target);
             }
         }
+        try {
+            angular.module('templates');
+        }
+        catch (e) {
+            angular.module('templates', []);
+        }
         var selector = document.querySelector(component.$options.selector);
         angular.bootstrap(selector, [module.name], {});
     });

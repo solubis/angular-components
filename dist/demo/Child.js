@@ -45,6 +45,9 @@ var ChildService = (function () {
     function ChildService() {
         this.title = 'childService';
     }
+    ChildService.prototype.getName = function () {
+        return this.title;
+    };
     ChildService = __decorate([
         decorators_1.Service({
             name: 'childService'

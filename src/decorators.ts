@@ -137,6 +137,12 @@ function bootstrap(component) {
             }
         }
 
+        try {
+            angular.module('templates');
+        } catch (e) {
+            angular.module('templates', []);
+        }
+
         let selector = document.querySelector(component.$options.selector);
 
         angular.bootstrap(selector, [module.name], {});

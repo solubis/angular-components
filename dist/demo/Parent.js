@@ -47,6 +47,9 @@ var ParentService = (function () {
     function ParentService() {
         this.title = 'parentService';
     }
+    ParentService.prototype.getName = function () {
+        return this.title;
+    };
     ParentService = __decorate([
         decorators_1.Service({
             name: 'parentService'

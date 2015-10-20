@@ -11,12 +11,14 @@
         "outDir": "dist"
     },
     "filesGlob": [
+        "index.d.ts",
         "src/**/*.ts",
         "typings/tsd.d.ts",
         "!dist/**",
         "!node_modules/**"
     ],
     "files": [
+        "index.d.ts",
         "src/core.ts",
         "src/core/ConfigService.ts",
         "src/core/HttpInterceptor.ts",
