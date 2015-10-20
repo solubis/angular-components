@@ -1,4 +1,4 @@
-import * as angular from 'angular';
+// import * as angular from 'angular';
 
 let providers = {
     services: [],
@@ -102,16 +102,16 @@ function RouteConfig(options) {
     };
 }
 
-function toCamelCase(string) {
-    string = string.charAt(0).toLowerCase() + string.substring(1);
-    return string.replace(/-([a-z])/ig, function(all, letter) {
+function toCamelCase(str: string) {
+    str = str.charAt(0).toLowerCase() + str.substring(1);
+    return str.replace(/-([a-z])/ig, function(all, letter) {
         return letter.toUpperCase();
     });
 }
 
-function defineModuleForTarget(target) {
+function defineModuleForTarget(target: any, dependencies?: string[]) {
     let name = toCamelCase(target.$options.selector);
-    let module = angular.module(name, target.$options.dependencies || []);
+    let module = angular.module(name, [].concat(dependencies || []).concat(target.$options.dependencies || []));
 
     module.run(target.prototype.run || (() => { }));
     module.config(target.prototype.config || (() => { }));
@@ -121,7 +121,7 @@ function defineModuleForTarget(target) {
 
 function bootstrap(component) {
     angular.element(document).ready(() => {
-        let module = defineModuleForTarget(component);
+        let module = defineModuleForTarget(component, ['templates']);
 
         for (let directive of providers.directives) {
             module.directive(directive.name, directive.fn);

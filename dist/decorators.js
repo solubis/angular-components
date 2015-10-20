@@ -1,4 +1,4 @@
-var angular = require('angular');
+// import * as angular from 'angular';
 var providers = {
     services: [],
     filters: [],
@@ -92,22 +92,22 @@ function RouteConfig(options) {
     };
 }
 exports.RouteConfig = RouteConfig;
-function toCamelCase(string) {
-    string = string.charAt(0).toLowerCase() + string.substring(1);
-    return string.replace(/-([a-z])/ig, function (all, letter) {
+function toCamelCase(str) {
+    str = str.charAt(0).toLowerCase() + str.substring(1);
+    return str.replace(/-([a-z])/ig, function (all, letter) {
         return letter.toUpperCase();
     });
 }
-function defineModuleForTarget(target) {
+function defineModuleForTarget(target, dependencies) {
     var name = toCamelCase(target.$options.selector);
-    var module = angular.module(name, target.$options.dependencies || []);
+    var module = angular.module(name, [].concat(dependencies || []).concat(target.$options.dependencies || []));
     module.run(target.prototype.run || (function () { }));
     module.config(target.prototype.config || (function () { }));
     return module;
 }
 function bootstrap(component) {
     angular.element(document).ready(function () {
-        var module = defineModuleForTarget(component);
+        var module = defineModuleForTarget(component, ['templates']);
         for (var _i = 0, _a = providers.directives; _i < _a.length; _i++) {
             var directive = _a[_i];
             module.directive(directive.name, directive.fn);

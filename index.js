@@ -1,3 +1,1 @@
-require('./dist/decorators');
-require('./dist/core');
-require('./dist/security');
+module.exports = require('./dist/decorators');
