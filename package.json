@@ -49,5 +49,8 @@
         "angular": "*",
         "jsrsasign": "*",
         "moment": "*"
+    },
+    "jspm": {
+        "registry": "npm"
     }
 }
