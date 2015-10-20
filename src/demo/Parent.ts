@@ -1,4 +1,5 @@
 import {Component, Service, Inject } from '../decorators';
+import IService from './IService';
 import './Child';
 
 @Component({
@@ -20,10 +21,14 @@ class Parent {
 @Service({
     name: 'parentService'
 })
-class ParentService {
+class ParentService implements IService {
     title: string;
 
     constructor() {
         this.title = 'parentService';
+    }
+    
+    getName(){
+        return this.title;
     }
 }

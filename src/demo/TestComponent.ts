@@ -1,4 +1,6 @@
 import {Component, View, Service, Inject, bootstrap } from '../decorators';
+import IService from './IService';
+
 import './Parent';
 
 @Component({
@@ -29,11 +31,15 @@ class TestComponent {
 @Service({
     name: 'myService'
 })
-class TestService {
+class TestService implements IService {
     title: string;
 
     constructor() {
         this.title = 'myService';
+    }
+
+    getName() {
+        return this.title;
     }
 }
 

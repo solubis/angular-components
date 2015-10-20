@@ -25,6 +25,7 @@
         "src/core/UtilsService.ts",
         "src/decorators.ts",
         "src/demo/Child.ts",
+        "src/demo/IService.ts",
         "src/demo/Parent.ts",
         "src/demo/TestComponent.ts",
         "src/security.ts",

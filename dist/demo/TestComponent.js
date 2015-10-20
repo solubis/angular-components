@@ -45,6 +45,9 @@ var TestService = (function () {
     function TestService() {
         this.title = 'myService';
     }
+    TestService.prototype.getName = function () {
+        return this.title;
+    };
     TestService = __decorate([
         decorators_1.Service({
             name: 'myService'
