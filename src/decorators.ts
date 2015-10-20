@@ -1,4 +1,4 @@
-// import * as angular from 'angular';
+import * as angular from 'angular';
 
 let providers = {
     services: [],
@@ -7,8 +7,6 @@ let providers = {
 };
 
 let components = [];
-
-let routes = [];
 
 function Service(options) {
     return function decorator(target) {
@@ -39,8 +37,6 @@ function Inject(...dependencies) {
         }
     };
 }
-
-
 
 function Component(options) {
     return function decorator(target) {
@@ -89,24 +85,15 @@ function View(options) {
 }
 
 function Directive(options) {
-    return function decorator(target) {
+    return function decorator(target, key, descriptor) {
         let name = toCamelCase(options.selector);
-        providers.directives.push({ name, fn: target.directiveFactory });
-    };
-}
-
-
-function RouteConfig(options) {
-    return function decorator(target) {
-        routes.push({ name: options.name }, options);
+        providers.directives.push({ name, fn: descriptor.value });
     };
 }
 
 function toCamelCase(str: string) {
     str = str.charAt(0).toLowerCase() + str.substring(1);
-    return str.replace(/-([a-z])/ig, function(all, letter) {
-        return letter.toUpperCase();
-    });
+    return str.replace(/-([a-z])/ig, (all, letter) => letter.toUpperCase());
 }
 
 function defineModuleForTarget(target: any, dependencies?: string[]) {
@@ -149,4 +136,4 @@ function bootstrap(component) {
     });
 }
 
-export {Component, View, RouteConfig, Inject, Service, Filter, Directive, bootstrap};
+export {Component, View, Inject, Service, Filter, Directive, bootstrap};

@@ -1,11 +1,10 @@
-// import * as angular from 'angular';
+var angular = require('angular');
 var providers = {
     services: [],
     filters: [],
     directives: []
 };
 var components = [];
-var routes = [];
 function Service(options) {
     return function decorator(target) {
         options = options ? options : {};
@@ -80,23 +79,15 @@ function View(options) {
 }
 exports.View = View;
 function Directive(options) {
-    return function decorator(target) {
+    return function decorator(target, key, descriptor) {
         var name = toCamelCase(options.selector);
-        providers.directives.push({ name: name, fn: target.directiveFactory });
+        providers.directives.push({ name: name, fn: descriptor.value });
     };
 }
 exports.Directive = Directive;
-function RouteConfig(options) {
-    return function decorator(target) {
-        routes.push({ name: options.name }, options);
-    };
-}
-exports.RouteConfig = RouteConfig;
 function toCamelCase(str) {
     str = str.charAt(0).toLowerCase() + str.substring(1);
-    return str.replace(/-([a-z])/ig, function (all, letter) {
-        return letter.toUpperCase();
-    });
+    return str.replace(/-([a-z])/ig, function (all, letter) { return letter.toUpperCase(); });
 }
 function defineModuleForTarget(target, dependencies) {
     var name = toCamelCase(target.$options.selector);
