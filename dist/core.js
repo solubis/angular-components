@@ -15,10 +15,10 @@ var UtilsService_1 = require('./core/UtilsService');
 exports.UtilsService = UtilsService_1.default;
 exports.module = angular.module('core', [])
     .value('$dateFormat', 'DD.MM.YYYY HH:mm:ss')
-    .filter('dateFormat', function ($utils) { return function (value) { return $utils.formatDate(value); }; })
-    .config(function ($httpProvider) {
+    .filter('dateFormat', ["$utils", function ($utils) { return function (value) { return $utils.formatDate(value); }; }])
+    .config(["$httpProvider", function ($httpProvider) {
     $httpProvider.interceptors.push(HttpInterceptor_1.default.factory);
-})
+}])
     .provider('$rest', RestService_1.RestServiceProvider)
     .provider('$config', ConfigService_1.default)
     .service('$utils', UtilsService_1.default)

@@ -12,6 +12,7 @@ var SettingsService = (function () {
         };
         this.settings = JSON.parse($window.localStorage.getItem(this.config.storeName)) || this.settings;
     }
+    SettingsService.$inject = ["$window", "config"];
     SettingsService.prototype.getSettings = function () {
         return this.settings;
     };
@@ -66,6 +67,7 @@ var SettingsServiceProvider = (function () {
     SettingsServiceProvider.prototype.$get = function ($window) {
         return new SettingsService($window, this.config);
     };
+    SettingsServiceProvider.prototype.$get.$inject = ["$window"];
     return SettingsServiceProvider;
 })();
 exports.SettingsServiceProvider = SettingsServiceProvider;

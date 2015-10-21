@@ -8,6 +8,7 @@ const config = {
     systemjs: `${root}/system.config.js`,
     typescript: `${root}/tsconfig.json`,
 
+    indexHTML: 'src/demo/index.html',
     templatesModuleName: 'templates',
 
     /**
@@ -18,7 +19,7 @@ const config = {
     src: {
         basePath: `${root}/src/`,
         files: `${root}/src/**/*.{css,ts,html,jpg,png}`,
-        typescripts: `${root}/src/**/!(*.spec).ts`,
+        typescripts: [`${root}/src/**/!(*.spec).ts`,`${root}/typings/tsd.d.ts`],
         images: `${root}/src/images/**/*`,
         fonts: `${root}/src/fonts/**/*`,
         data: `${root}/src/data/**/*`,
@@ -32,7 +33,7 @@ const config = {
      */
     dist: {
         basePath: `${root}/dist/`,
-        scripts: `${root}/dist/scripts/`,
+        scripts: `${root}/dist/`,
         styles: `${root}/dist/styles/`,
         images: `${root}/dist/images/`,
         data: `${root}/dist/data/`,

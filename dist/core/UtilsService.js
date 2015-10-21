@@ -11,6 +11,7 @@ var UtilsService = (function () {
         this.$filter = $filter;
         this.$dateFormat = $dateFormat;
     }
+    UtilsService.$inject = ["$filter", "$dateFormat"];
     /*
      Get form fields that changed, are part of model and convert them to form acceptable by server
      */

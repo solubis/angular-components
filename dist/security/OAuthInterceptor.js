@@ -54,10 +54,12 @@ var OAuthHttpInterceptor = (function () {
             return _this.$q.reject(rejection);
         };
     }
+    OAuthHttpInterceptor.$inject = ["$rootScope", "$q", "$oauthToken"];
     /*@ngInject*/
     OAuthHttpInterceptor.factory = function ($rootScope, $q, $oauthToken) {
         return new OAuthHttpInterceptor($rootScope, $q, $oauthToken);
     };
+    OAuthHttpInterceptor.factory.$inject = ["$rootScope", "$q", "$oauthToken"];
     return OAuthHttpInterceptor;
 })();
 Object.defineProperty(exports, "__esModule", { value: true });

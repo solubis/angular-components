@@ -31,5 +31,6 @@ function AuthorizeDirective($security) {
         }
     };
 }
+AuthorizeDirective.$inject = ["$security"];
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = AuthorizeDirective;

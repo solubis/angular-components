@@ -2,6 +2,7 @@ import gulp from 'gulp';
 import runSequence from 'run-sequence';
 import browserSync from 'browser-sync';
 import del from 'del';
+import merge from 'merge2';
 import Builder from 'systemjs-builder';
 
 import config from './gulpfile.config.js';
@@ -29,7 +30,7 @@ gulp.task('server', () => {
         port: 3000,
         directory: true,
         notify: true,
-        startPath: `src/index.html`,
+        startPath: config.indexHTML,
         files: files,
         server: {
             baseDir: './'
@@ -92,23 +93,6 @@ gulp.task('fonts', () => {
         .pipe(gulp.dest(config.dist.fonts));
 });
 
-/**
- * The HTML convert templates to JS task.
- */
-
-gulp.task('html', () => {
-    return gulp.src(config.src.html)
-        .pipe($.minifyHtml({
-            empty: true,
-            spare: true,
-            quotes: true
-        }))
-        .pipe($.ngHtml2js({
-            moduleName: config.templatesModuleName
-        }))
-        .pipe($.concat('templates.js'))
-        .pipe(gulp.dest(config.dist.scripts));
-});
 
 /**
  * The 'compile' task compile all js, css and html files.
@@ -138,6 +122,24 @@ gulp.task('htmlhint', () => {
 });
 
 /**
+ * The HTML convert templates to JS task.
+ */
+
+gulp.task('html', () => {
+    return gulp.src(config.src.html)
+        .pipe($.minifyHtml({
+            empty: true,
+            spare: true,
+            quotes: true
+        }))
+        .pipe($.ngHtml2js({
+            moduleName: config.templatesModuleName
+        }))
+        .pipe($.concat(`${config.templatesModuleName}.js`))
+        .pipe(gulp.dest(config.dist.scripts));
+});
+
+/**
  * The 'Typescript' task.
  */
 gulp.task('typescript', () => {
@@ -145,32 +147,39 @@ gulp.task('typescript', () => {
         config.typescript
     );
 
-    return project.src()
+    let result = gulp.src(config.src.typescripts)
         .pipe($.plumber())
         .pipe($.tslint())
-        .pipe($.tslint.report('prose', {emitError: false}))
-        .pipe($.typescript(project))
-        .js.pipe($.ngAnnotate())
-        .pipe(gulp.dest(config.dist.scripts));
+        .pipe($.tslint.report('prose', {
+            emitError: false
+        }))
+        .pipe($.typescript(project));
+
+    return merge([
+        result.dts.pipe(gulp.dest(config.dist.scripts)),
+        result.js.pipe($.ngAnnotate()).pipe(gulp.dest(config.dist.scripts))
+    ]);
 });
 
 /**
  * The 'Bundle' task.
  */
 
-gulp.task('bundle', ['typescript'], () => {
+gulp.task('bundle', ['typescript'], (done) => {
     let builder = new Builder(config.root);
 
     builder.loadConfig(config.systemjs)
         .then(() => {
             return builder.buildStatic(
-                `${config.dist.scripts}src/modules/app.js`,
+                `${config.dist.scripts}index.js`,
                 `${config.dist.scripts}bundle.js`, {
                     minify: false,
                     mangle: false,
                     sourceMaps: false
                 });
-        }).then(() => del(`${config.dist.scripts}src`));
+        }).then(() => {
+            done();
+        });
 });
 
 /**
