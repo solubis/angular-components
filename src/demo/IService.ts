@@ -1,5 +1,5 @@
 interface IService {
-	getName():string;
+    getName(): string;
 }
 
 export default IService;

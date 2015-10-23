@@ -77,13 +77,13 @@ var OAuthTokenService = (function () {
         var result = false;
         var publicKey = this.config.publicKey;
         try {
-            result = KJUR.jws.JWS.verify(token, publicKey, ["RS256"]);
+            result = KJUR.jws.JWS.verify(token, publicKey, ['RS256']);
         }
         catch (ex) {
-            console.error("OAuth Token Service Error: " + ex);
+            console.error('OAuth Token Service Error: ' + ex);
             result = false;
         }
-        if (result == true) {
+        if (result === true) {
             console.log('Token Signature Valid');
         }
         else {
@@ -95,23 +95,15 @@ var OAuthTokenService = (function () {
         var output = str.replace(/-/g, '+').replace(/_/g, '/');
         switch (output.length % 4) {
             case 0:
-                {
-                    break;
-                }
+                break;
             case 2:
-                {
-                    output += '==';
-                    break;
-                }
+                output += '==';
+                break;
             case 3:
-                {
-                    output += '=';
-                    break;
-                }
+                output += '=';
+                break;
             default:
-                {
-                    throw 'Illegal base64url string!';
-                }
+                throw 'Illegal base64url string!';
         }
         return this.$window.decodeURIComponent(this.$window.encodeURIComponent(this.$window.atob(output)));
     };
@@ -129,7 +121,7 @@ var OAuthTokenService = (function () {
     OAuthTokenService.prototype.getTokenExpirationDate = function (token) {
         var decoded;
         decoded = this.decodeToken(token);
-        if (typeof decoded.exp === "undefined") {
+        if (typeof decoded.exp === 'undefined') {
             return null;
         }
         var d = new Date(0); // The 0 here is the key, which sets the date to the epoch

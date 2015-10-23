@@ -288,13 +288,13 @@ export class SecurityService {
      */
     authorize(
         requiredPermissions: any,
-        isLoginRequired: boolean = true,
+        isLoginRequired = true,
         permissionCheckType: PermissionCheckType = PermissionCheckType.One): AccessStatus {
 
         let user = this.getUserLogin();
         let userPermissions = this.getUserPermissions();
         let length;
-        let hasPermission: boolean = true;
+        let hasPermission = true;
         let permission: string;
         let i: number;
 
@@ -379,7 +379,7 @@ export class SecurityServiceProvider implements ng.IServiceProvider {
 
     /*@ngInject*/
     $get($http, $window, $location, $timeout, $queryString, $oauthToken, Organisation) {
-        return new SecurityService($http, $window, $location, $timeout, $queryString, $oauthToken, Organisation, this.config)
+        return new SecurityService($http, $window, $location, $timeout, $queryString, $oauthToken, Organisation, this.config);
     }
 }
 

@@ -12,7 +12,7 @@ let module = angular.module('fds.security', [core.module.name])
 
     .config(($httpProvider, $configProvider, $securityProvider: SecurityServiceProvider) => {
         let config = $configProvider.$get();
- 
+
         $securityProvider.configure(config);
         $httpProvider.interceptors.push(OAuthInterceptor.factory);
     })

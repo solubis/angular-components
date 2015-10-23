@@ -87,7 +87,7 @@ class OAuthTokenService {
                 access_token: accessToken,
                 token_type: 'bearer',
                 content: content
-            })
+            });
         }
     }
 
@@ -96,13 +96,13 @@ class OAuthTokenService {
         let publicKey = this.config.publicKey;
 
         try {
-            result = KJUR.jws.JWS.verify(token, publicKey, ["RS256"]);
+            result = KJUR.jws.JWS.verify(token, publicKey, ['RS256']);
         } catch (ex) {
-            console.error("OAuth Token Service Error: " + ex);
+            console.error('OAuth Token Service Error: ' + ex);
             result = false;
         }
 
-        if (result == true) {
+        if (result === true) {
             console.log('Token Signature Valid');
         } else {
             console.log('Token Signature Not Valid');
@@ -115,23 +115,15 @@ class OAuthTokenService {
         let output = str.replace(/-/g, '+').replace(/_/g, '/');
         switch (output.length % 4) {
             case 0:
-                {
-                    break;
-                }
+                break;
             case 2:
-                {
-                    output += '==';
-                    break;
-                }
+                output += '==';
+                break;
             case 3:
-                {
-                    output += '=';
-                    break;
-                }
+                output += '=';
+                break;
             default:
-                {
-                    throw 'Illegal base64url string!';
-                }
+                throw 'Illegal base64url string!';
         }
         return this.$window.decodeURIComponent(this.$window.encodeURIComponent(this.$window.atob(output)));
     }
@@ -155,7 +147,7 @@ class OAuthTokenService {
         let decoded;
         decoded = this.decodeToken(token);
 
-        if (typeof decoded.exp === "undefined") {
+        if (typeof decoded.exp === 'undefined') {
             return null;
         }
 

@@ -21,9 +21,10 @@ var OAuthHttpInterceptor = (function () {
             return config;
         };
         this.responseError = function (rejection) {
+            var description = rejection.data && rejection.data.error_description;
             var error = {
                 status: rejection.status,
-                message: rejection.data && rejection.data.error_description ? rejection.data.error_description : 'Unknown OAuth Error ' + JSON.stringify(rejection),
+                message: description || 'Unknown OAuth Error ' + JSON.stringify(rejection)
             };
             /*
              Catch `invalid_request` and `invalid_grant` errors and ensure that the `token` is removed.

@@ -2,7 +2,7 @@
   "name": "angular-components",
   "version": "0.0.1",
   "registry": "npm",
-  "description": "How to setup and write next generation JavaScript (ES6 / ES2015, ES7 / ES2016 etc) with the Babel compiler. For an https://egghead.io lesson.",
+  "description": "Angular Components written in Typescript",
   "scripts": {
     "postinstall": "tsd install"
   },
@@ -15,7 +15,7 @@
   "bugs": {
     "url": "https://github.com/solubis/components/issues"
   },
-  "main": "index.js",
+  "main": "dist/index.js",
   "devDependencies": {
     "angular": "*",
     "babel-core": "^5.8.25",

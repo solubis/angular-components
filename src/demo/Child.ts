@@ -20,14 +20,14 @@ class Child {
 @Service({
     name: 'childService'
 })
-class ChildService implements IService{
+class ChildService implements IService {
     title: string;
 
     constructor() {
         this.title = 'childService';
     }
-    
-    getName(){
+
+    getName() {
         return this.title;
     }
 }

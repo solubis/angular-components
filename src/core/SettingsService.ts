@@ -41,7 +41,7 @@ class SettingsService {
     }
 
     set(key, value = undefined) {
-        this.put(key, value)
+        this.put(key, value);
     }
 
     remove(key) {

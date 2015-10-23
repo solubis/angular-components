@@ -12,16 +12,6 @@ function replacer(key, value) {
 /*@ngInject*/
 class HttpInterceptor {
 
-    /*@ngInject*/
-    public static factory($rootScope: ng.IRootScopeService, $q: ng.IQService, $log: ng.ILogService) {
-        return new HttpInterceptor($rootScope, $q, $log);
-    }
-
-    constructor(private $rootScope: ng.IRootScopeService,
-        private $q: ng.IQService,
-        private $log: ng.ILogService) {
-    }
-
     request = (config) => {
         if (config.command) {
             this.$log.debug(config.method + ' ' + config.command +
@@ -60,6 +50,16 @@ class HttpInterceptor {
 
         return this.$q.reject(rejection);
     };
+
+    /*@ngInject*/
+    public static factory($rootScope: ng.IRootScopeService, $q: ng.IQService, $log: ng.ILogService) {
+        return new HttpInterceptor($rootScope, $q, $log);
+    }
+
+    constructor(private $rootScope: ng.IRootScopeService,
+        private $q: ng.IQService,
+        private $log: ng.ILogService) {
+    }
 }
 
 export default HttpInterceptor;

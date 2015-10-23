@@ -7,17 +7,6 @@ import OAuthTokenService from './OAuthTokenService';
 /*@ngInject*/
 class OAuthHttpInterceptor {
 
-    /*@ngInject*/
-    public static factory($rootScope: ng.IRootScopeService, $q: ng.IQService, $oauthToken) {
-        return new OAuthHttpInterceptor($rootScope, $q, $oauthToken);
-    }
-
-    constructor(
-        private $rootScope: ng.IRootScopeService,
-        private $q: ng.IQService,
-        private $oauthToken) {
-    }
-
     request = (config) => {
         /*
          Inject `Authorization` header.
@@ -34,9 +23,10 @@ class OAuthHttpInterceptor {
     };
 
     responseError = (rejection) => {
-        var error: any = {
+        let description = rejection.data && rejection.data.error_description;
+        let error: any = {
             status: rejection.status,
-            message: rejection.data && rejection.data.error_description ? rejection.data.error_description : 'Unknown OAuth Error ' + JSON.stringify(rejection),
+            message: description || 'Unknown OAuth Error ' + JSON.stringify(rejection)
         };
         /*
          Catch `invalid_request` and `invalid_grant` errors and ensure that the `token` is removed.
@@ -72,7 +62,20 @@ class OAuthHttpInterceptor {
         }
 
         return this.$q.reject(rejection);
+    };
+
+    /*@ngInject*/
+    public static factory($rootScope: ng.IRootScopeService, $q: ng.IQService, $oauthToken: OAuthTokenService) {
+        return new OAuthHttpInterceptor($rootScope, $q, $oauthToken);
     }
+
+    constructor(
+        private $rootScope: ng.IRootScopeService,
+        private $q: ng.IQService,
+        private $oauthToken) {
+    }
+
+
 }
 
 export default OAuthHttpInterceptor;

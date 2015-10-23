@@ -27,8 +27,8 @@ class ParentService implements IService {
     constructor() {
         this.title = 'parentService';
     }
-    
-    getName(){
+
+    getName() {
         return this.title;
     }
 }
