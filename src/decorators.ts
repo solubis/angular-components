@@ -41,46 +41,28 @@ function Inject(...dependencies) {
 function Component(options) {
     return function decorator(target) {
         options = options ? options : {};
+
         if (!options.selector) {
             throw new Error('@Component() must contain selector property!');
         }
 
-        if (target.$initView) {
-            target.$initView(options.selector);
-        }
-        target.$options = options;
-        target.$isComponent = true;
-
-        components.push(target);
-    };
-}
-
-function View(options) {
-    return function decorator(target) {
-        options = options ? options : {};
-
-        if (target.$isComponent) {
-            throw new Error('@View() must be placed after @Component()!');
-        }
-
-        target.$initView = function(selector) {
-            const defaults = {
-                templateUrl: options.templateUrl,
+        if (options.templateUrl || options.template) {
+            let directive = {
                 restrict: 'E',
                 scope: {},
                 bindToController: true,
+                controller: target,
                 controllerAs: 'ctrl'
             };
 
-            let name = toCamelCase(selector);
+            let name = toCamelCase(options.selector);
 
-            options.bindToController = options.bindToController || options.bind || {};
-            options.controller = target;
+            providers.directives.push({ name, fn: () => angular.extend(directive, options) });
+        }
 
-            providers.directives.push({ name, fn: () => angular.extend(defaults, options) });
-        };
+        target.$options = options;
 
-        target.$isView = true;
+        components.push(target);
     };
 }
 
@@ -136,4 +118,4 @@ function bootstrap(component) {
     });
 }
 
-export {Component, View, Inject, Service, Filter, Directive, bootstrap};
+export {Component, Inject, Service, Filter, Directive, bootstrap};

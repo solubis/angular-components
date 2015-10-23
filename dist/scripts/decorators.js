@@ -46,38 +46,22 @@ function Component(options) {
         if (!options.selector) {
             throw new Error('@Component() must contain selector property!');
         }
-        if (target.$initView) {
-            target.$initView(options.selector);
+        if (options.templateUrl || options.template) {
+            var directive = {
+                restrict: 'E',
+                scope: {},
+                bindToController: true,
+                controller: target,
+                controllerAs: 'ctrl'
+            };
+            var name_1 = toCamelCase(options.selector);
+            providers.directives.push({ name: name_1, fn: function () { return angular.extend(directive, options); } });
         }
         target.$options = options;
-        target.$isComponent = true;
         components.push(target);
     };
 }
 exports.Component = Component;
-function View(options) {
-    return function decorator(target) {
-        options = options ? options : {};
-        if (target.$isComponent) {
-            throw new Error('@View() must be placed after @Component()!');
-        }
-        target.$initView = function (selector) {
-            var defaults = {
-                templateUrl: options.templateUrl,
-                restrict: 'E',
-                scope: {},
-                bindToController: true,
-                controllerAs: 'ctrl'
-            };
-            var name = toCamelCase(selector);
-            options.bindToController = options.bindToController || options.bind || {};
-            options.controller = target;
-            providers.directives.push({ name: name, fn: function () { return angular.extend(defaults, options); } });
-        };
-        target.$isView = true;
-    };
-}
-exports.View = View;
 function Directive(options) {
     return function decorator(target, key, descriptor) {
         var name = toCamelCase(options.selector);
