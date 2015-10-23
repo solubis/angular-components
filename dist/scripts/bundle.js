@@ -12054,309 +12054,366 @@ $__System.registerDynamic("3", ["2"], true, function(req, exports, module) {
   return module.exports;
 });
 
-$__System.registerDynamic("4", [], true, function(req, exports, module) {
-  ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
-  var SettingsService = (function() {
-    function SettingsService($window, config) {
-      this.$window = $window;
-      this.config = config;
-      this.settings = {
-        debug: false,
-        path: ''
-      };
-      this.settings = JSON.parse($window.localStorage.getItem(this.config.storeName)) || this.settings;
+/**
+ * Saving and loading settings from local storage
+ */
+$__System.register("4", [], function(exports_1) {
+    var SettingsService, SettingsServiceProvider;
+    return {
+        setters:[],
+        execute: function() {
+            /*@ngInject*/
+            SettingsService = (function () {
+                function SettingsService($window, config) {
+                    this.$window = $window;
+                    this.config = config;
+                    this.settings = {
+                        debug: false,
+                        path: ''
+                    };
+                    this.settings = JSON.parse($window.localStorage.getItem(this.config.storeName)) || this.settings;
+                }
+                SettingsService.prototype.getSettings = function () {
+                    return this.settings;
+                };
+                SettingsService.prototype.saveSettings = function () {
+                    var text = JSON.stringify(this.settings);
+                    if (text && text !== '{}') {
+                        this.$window.localStorage.setItem(this.config.storeName, text);
+                    }
+                };
+                SettingsService.prototype.get = function (name) {
+                    return this.settings[name];
+                };
+                SettingsService.prototype.put = function (key, value) {
+                    if (value === void 0) { value = undefined; }
+                    if (value) {
+                        this.settings[key] = value;
+                    }
+                    else {
+                        delete this.settings[key];
+                    }
+                    this.saveSettings();
+                };
+                SettingsService.prototype.set = function (key, value) {
+                    if (value === void 0) { value = undefined; }
+                    this.put(key, value);
+                };
+                SettingsService.prototype.remove = function (key) {
+                    this.put(key);
+                };
+                return SettingsService;
+            })();
+            SettingsServiceProvider = (function () {
+                function SettingsServiceProvider() {
+                    this.config = {
+                        storeName: 'iq.settings'
+                    };
+                }
+                /**
+                 * Configure.
+                 *
+                 * @param {object} params - An `object` of params to extend.
+                 */
+                SettingsServiceProvider.prototype.configure = function (params) {
+                    if (!(params instanceof Object)) {
+                        throw new TypeError('Invalid argument: `config` must be an `Object`.');
+                    }
+                    angular.extend(this.config, params);
+                    return this;
+                };
+                /*@ngInject*/
+                SettingsServiceProvider.prototype.$get = function ($window) {
+                    return new SettingsService($window, this.config);
+                };
+                return SettingsServiceProvider;
+            })();
+            exports_1("default",SettingsService);
+            exports_1("SettingsServiceProvider", SettingsServiceProvider);
+            exports_1("SettingsService", SettingsService);
+        }
     }
-    SettingsService.$inject = ["$window", "config"];
-    SettingsService.prototype.getSettings = function() {
-      return this.settings;
-    };
-    SettingsService.prototype.saveSettings = function() {
-      var text = JSON.stringify(this.settings);
-      if (text && text !== '{}') {
-        this.$window.localStorage.setItem(this.config.storeName, text);
-      }
-    };
-    SettingsService.prototype.get = function(name) {
-      return this.settings[name];
-    };
-    SettingsService.prototype.put = function(key, value) {
-      if (value === void 0) {
-        value = undefined;
-      }
-      if (value) {
-        this.settings[key] = value;
-      } else {
-        delete this.settings[key];
-      }
-      this.saveSettings();
-    };
-    SettingsService.prototype.set = function(key, value) {
-      if (value === void 0) {
-        value = undefined;
-      }
-      this.put(key, value);
-    };
-    SettingsService.prototype.remove = function(key) {
-      this.put(key);
-    };
-    return SettingsService;
-  })();
-  exports.SettingsService = SettingsService;
-  var SettingsServiceProvider = (function() {
-    function SettingsServiceProvider() {
-      this.config = {storeName: 'iq.settings'};
-    }
-    SettingsServiceProvider.prototype.configure = function(params) {
-      if (!(params instanceof Object)) {
-        throw new TypeError('Invalid argument: `config` must be an `Object`.');
-      }
-      angular.extend(this.config, params);
-      return this;
-    };
-    SettingsServiceProvider.prototype.$get = function($window) {
-      return new SettingsService($window, this.config);
-    };
-    SettingsServiceProvider.prototype.$get.$inject = ["$window"];
-    return SettingsServiceProvider;
-  })();
-  exports.SettingsServiceProvider = SettingsServiceProvider;
-  Object.defineProperty(exports, "__esModule", {value: true});
-  exports.default = SettingsService;
-  global.define = __define;
-  return module.exports;
 });
 
-$__System.registerDynamic("5", [], true, function(req, exports, module) {
-  ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
-  var RestService = (function() {
-    function RestService($http, $q, $window, $rootScope, $log, config) {
-      var _this = this;
-      this.$http = $http;
-      this.$q = $q;
-      this.$window = $window;
-      this.$rootScope = $rootScope;
-      this.$log = $log;
-      this.config = config;
-      this.headers = {'Content-Type': 'application/json;charset=utf-8'};
-      var updateOnlineStatus = function() {
-        _this.isOffline = !navigator.onLine;
-        if (_this.isOffline) {
-          $rootScope.$broadcast('$rest:offline');
-        } else {
-          $rootScope.$broadcast('$rest:online');
+/**
+ * REST communication and error handling
+ */
+$__System.register("5", [], function(exports_1) {
+    var RestService, RestServiceProvider;
+    return {
+        setters:[],
+        execute: function() {
+            /*@ngInject*/
+            RestService = (function () {
+                function RestService($http, $q, $window, $rootScope, $log, config) {
+                    /*
+                     Internet connection mockup/online notification
+                     */
+                    var _this = this;
+                    this.$http = $http;
+                    this.$q = $q;
+                    this.$window = $window;
+                    this.$rootScope = $rootScope;
+                    this.$log = $log;
+                    this.config = config;
+                    this.headers = { 'Content-Type': 'application/json;charset=utf-8' };
+                    var updateOnlineStatus = function () {
+                        _this.isOffline = !navigator.onLine;
+                        if (_this.isOffline) {
+                            $rootScope.$broadcast('$rest:offline');
+                        }
+                        else {
+                            $rootScope.$broadcast('$rest:online');
+                        }
+                    };
+                    if ($window.addEventListener) {
+                        $window.addEventListener('online', updateOnlineStatus);
+                        $window.addEventListener('offline', updateOnlineStatus);
+                    }
+                    else {
+                        $window.attachEvent('online', updateOnlineStatus);
+                        $window.attachEvent('offline', updateOnlineStatus);
+                    }
+                    /*
+                     Configuration
+                     */
+                    this.isMockupEnabled = config.mockupEnabled;
+                    if (this.isMockupEnabled) {
+                        $log.warn('Using Mockup Data');
+                        return;
+                    }
+                    if (config.restURL) {
+                        this.url = config.restURL.trim();
+                        if (this.url.charAt(this.url.length - 1) !== '/') {
+                            this.url += '/';
+                        }
+                    }
+                    $log.info('REST ' + this.url);
+                }
+                RestService.prototype.init = function () {
+                    var _this = this;
+                    return this.get({ command: 'version' })
+                        .then(function (result) {
+                        _this.$rootScope.$restVersion = result.version + '.' + result.revision;
+                        _this.$log.info('REST', _this.$rootScope.$restVersion, moment(result.date).format('DD.MM.YYYY hh:mm'));
+                    });
+                };
+                /**
+                 * Mockup response - return JSON file from 'data' folder instead server request
+                 *
+                 * @param {object} config
+                 * @returns {promise} - Request promise
+                 */
+                RestService.prototype.mockupResponse = function (config) {
+                    var _this = this;
+                    var request;
+                    request = this.$http
+                        .get('data/' + config.command + '.json')
+                        .then(function (response) {
+                        var content = response.data.content;
+                        if (_this.isMockupEnabled && content) {
+                            content = content.slice(config.params.number * config.params.size, (config.params.number + 1) * config.params.size);
+                            response.data.content = content;
+                            response.data.numberOfElements = content.length;
+                        }
+                        return response.data;
+                    });
+                    return request;
+                };
+                /**
+                 * Adds request header
+                 *
+                 * @param name
+                 * @param value
+                 */
+                RestService.prototype.putHeader = function (name, value) {
+                    this.headers[name] = value;
+                };
+                /**
+                 * Executes HTTP request
+                 *
+                 * @param method - HTTP method e.g. PUT, POST etc.
+                 * @param config - config {command: 'REST server endpoint command', params, data}
+                 * @returns {promise}
+                 */
+                RestService.prototype.request = function (method, config) {
+                    var _this = this;
+                    var deferred = this.$q.defer();
+                    if (!config.command) {
+                        throw new Error('REST Error: Command is required for REST call : ' + JSON.stringify(config));
+                    }
+                    config.url = this.url + config.command;
+                    config.method = method;
+                    config.headers = angular.extend(this.headers, config.headers);
+                    config.params = config.params || {};
+                    if (this.isMockupEnabled || config.mockup) {
+                        return this.mockupResponse(config);
+                    }
+                    this.$http(config)
+                        .success(function (data, status) {
+                        _this.$log.debug('RESPONSE ', config.command + ': ', 'status: ' + status + (data.content ? ', ' + (data.content && data.content.length) + ' items' : ''));
+                        if (data.result === 'error') {
+                            _this.$log.warn('Application error: "' + data.message + '" for: ' + JSON.stringify(config));
+                            deferred.reject({
+                                status: status,
+                                message: data
+                            });
+                            return;
+                        }
+                        deferred.resolve(data);
+                    })
+                        .error(function (data, status) {
+                        deferred.reject({
+                            status: status,
+                            message: data
+                        });
+                    });
+                    return deferred.promise;
+                };
+                RestService.prototype.post = function (params) {
+                    return this.request('POST', params);
+                };
+                RestService.prototype.patch = function (params) {
+                    return this.request('PATCH', params);
+                };
+                RestService.prototype.get = function (params) {
+                    return this.request('GET', params);
+                };
+                RestService.prototype.put = function (params) {
+                    return this.request('PUT', params);
+                };
+                RestService.prototype.remove = function (params) {
+                    return this.request('DELETE', params);
+                };
+                return RestService;
+            })();
+            RestServiceProvider = (function () {
+                function RestServiceProvider() {
+                    this.config = {
+                        restURL: window.location.origin
+                    };
+                }
+                /**
+                 * Configure.
+                 *
+                 * @param {object} params - An `object` of params to extend.
+                 */
+                RestServiceProvider.prototype.configure = function (params) {
+                    if (!(params instanceof Object)) {
+                        throw new TypeError('Invalid argument: `config` must be an `Object`.');
+                    }
+                    angular.extend(this.config, params);
+                    return this;
+                };
+                /*@ngInject*/
+                RestServiceProvider.prototype.$get = function ($http, $q, $window, $rootScope, $log) {
+                    return new RestService($http, $q, $window, $rootScope, $log, this.config);
+                };
+                return RestServiceProvider;
+            })();
+            exports_1("default",RestService);
+            exports_1("RestServiceProvider", RestServiceProvider);
+            exports_1("RestService", RestService);
         }
-      };
-      if ($window.addEventListener) {
-        $window.addEventListener('online', updateOnlineStatus);
-        $window.addEventListener('offline', updateOnlineStatus);
-      } else {
-        $window.attachEvent('online', updateOnlineStatus);
-        $window.attachEvent('offline', updateOnlineStatus);
-      }
-      this.isMockupEnabled = config.mockupEnabled;
-      if (this.isMockupEnabled) {
-        $log.warn('Using Mockup Data');
-        return;
-      }
-      if (config.restURL) {
-        this.url = config.restURL.trim();
-        if (this.url.charAt(this.url.length - 1) !== '/') {
-          this.url += '/';
-        }
-      }
-      $log.info('REST ' + this.url);
     }
-    RestService.$inject = ["$http", "$q", "$window", "$rootScope", "$log", "config"];
-    RestService.prototype.init = function() {
-      var _this = this;
-      return this.get({command: 'version'}).then(function(result) {
-        _this.$rootScope.$restVersion = result.version + '.' + result.revision;
-        _this.$log.info('REST', _this.$rootScope.$restVersion, moment(result.date).format('DD.MM.YYYY hh:mm'));
-      });
-    };
-    RestService.prototype.mockupResponse = function(config) {
-      var _this = this;
-      var request;
-      request = this.$http.get('data/' + config.command + '.json').then(function(response) {
-        var content = response.data.content;
-        if (_this.isMockupEnabled && content) {
-          content = content.slice(config.params.number * config.params.size, (config.params.number + 1) * config.params.size);
-          response.data.content = content;
-          response.data.numberOfElements = content.length;
-        }
-        return response.data;
-      });
-      return request;
-    };
-    RestService.prototype.putHeader = function(name, value) {
-      this.headers[name] = value;
-    };
-    RestService.prototype.request = function(method, config) {
-      var _this = this;
-      var deferred = this.$q.defer();
-      if (!config.command) {
-        throw new Error('REST Error: Command is required for REST call : ' + JSON.stringify(config));
-      }
-      config.url = this.url + config.command;
-      config.method = method;
-      config.headers = angular.extend(this.headers, config.headers);
-      config.params = config.params || {};
-      if (this.isMockupEnabled || config.mockup) {
-        return this.mockupResponse(config);
-      }
-      this.$http(config).success(function(data, status) {
-        _this.$log.debug('RESPONSE ', config.command + ': ', 'status: ' + status + (data.content ? ', ' + (data.content && data.content.length) + ' items' : ''));
-        if (data.result === 'error') {
-          _this.$log.warn('Application error: "' + data.message + '" for: ' + JSON.stringify(config));
-          deferred.reject({
-            status: status,
-            message: data
-          });
-          return;
-        }
-        deferred.resolve(data);
-      }).error(function(data, status) {
-        deferred.reject({
-          status: status,
-          message: data
-        });
-      });
-      return deferred.promise;
-    };
-    RestService.prototype.post = function(params) {
-      return this.request('POST', params);
-    };
-    RestService.prototype.patch = function(params) {
-      return this.request('PATCH', params);
-    };
-    RestService.prototype.get = function(params) {
-      return this.request('GET', params);
-    };
-    RestService.prototype.put = function(params) {
-      return this.request('PUT', params);
-    };
-    RestService.prototype.remove = function(params) {
-      return this.request('DELETE', params);
-    };
-    return RestService;
-  })();
-  exports.RestService = RestService;
-  var RestServiceProvider = (function() {
-    function RestServiceProvider() {
-      this.config = {restURL: window.location.origin};
-    }
-    RestServiceProvider.prototype.configure = function(params) {
-      if (!(params instanceof Object)) {
-        throw new TypeError('Invalid argument: `config` must be an `Object`.');
-      }
-      angular.extend(this.config, params);
-      return this;
-    };
-    RestServiceProvider.prototype.$get = function($http, $q, $window, $rootScope, $log) {
-      return new RestService($http, $q, $window, $rootScope, $log, this.config);
-    };
-    RestServiceProvider.prototype.$get.$inject = ["$http", "$q", "$window", "$rootScope", "$log"];
-    return RestServiceProvider;
-  })();
-  exports.RestServiceProvider = RestServiceProvider;
-  Object.defineProperty(exports, "__esModule", {value: true});
-  exports.default = RestService;
-  global.define = __define;
-  return module.exports;
 });
 
-$__System.registerDynamic("6", [], true, function(req, exports, module) {
-  ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
-  var ConfigServiceProvider = (function() {
-    function ConfigServiceProvider() {
-      this.config = {};
-      angular.extend(this.config, window.CONFIG);
+$__System.register("6", [], function(exports_1) {
+    var ConfigServiceProvider;
+    return {
+        setters:[],
+        execute: function() {
+            /*@ngInject*/
+            ConfigServiceProvider = (function () {
+                function ConfigServiceProvider() {
+                    this.config = {};
+                    angular.extend(this.config, window.CONFIG);
+                }
+                /**
+                 * Configure.
+                 *
+                 * @param {object} params - An `object` of params to extend.
+                 */
+                ConfigServiceProvider.prototype.configure = function (params) {
+                    if (!(params instanceof Object)) {
+                        throw new TypeError('Invalid argument: `config` must be an `Object`.');
+                    }
+                    angular.extend(this.config, params);
+                    return this;
+                };
+                ConfigServiceProvider.prototype.$get = function () {
+                    return this.config;
+                };
+                return ConfigServiceProvider;
+            })();
+            exports_1("ConfigServiceProvider", ConfigServiceProvider);
+            exports_1("default",ConfigServiceProvider);
+        }
     }
-    ConfigServiceProvider.prototype.configure = function(params) {
-      if (!(params instanceof Object)) {
-        throw new TypeError('Invalid argument: `config` must be an `Object`.');
-      }
-      angular.extend(this.config, params);
-      return this;
-    };
-    ConfigServiceProvider.prototype.$get = function() {
-      return this.config;
-    };
-    return ConfigServiceProvider;
-  })();
-  exports.ConfigServiceProvider = ConfigServiceProvider;
-  Object.defineProperty(exports, "__esModule", {value: true});
-  exports.default = ConfigServiceProvider;
-  global.define = __define;
-  return module.exports;
 });
 
-$__System.registerDynamic("7", [], true, function(req, exports, module) {
-  ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
-  function replacer(key, value) {
-    if (typeof value === 'string' && value.length > 35) {
-      return value.substring(0, 34) + '...';
-    }
-    return value;
-  }
-  var HttpInterceptor = (function() {
-    function HttpInterceptor($rootScope, $q, $log) {
-      var _this = this;
-      this.$rootScope = $rootScope;
-      this.$q = $q;
-      this.$log = $log;
-      this.request = function(config) {
-        if (config.command) {
-          _this.$log.debug(config.method + ' ' + config.command + ': params ' + JSON.stringify(config.params, replacer) + ', headers ' + JSON.stringify(config.headers, replacer) + (config.data ? ', body: ' + JSON.stringify(config.data, replacer) : ''));
+/**
+ * HTTP Interceptor for global error handling
+ */
+$__System.register("7", [], function(exports_1) {
+    var HttpInterceptor;
+    function replacer(key, value) {
+        if (typeof value === 'string' && value.length > 35) {
+            return value.substring(0, 34) + '...';
         }
-        return config;
-      };
-      this.responseError = function(rejection) {
-        _this.$log.error('HTTP Response Error, status: ' + rejection.status + ' message: ' + JSON.stringify(rejection.data, replacer));
-        rejection.message = rejection.data && rejection.data.error_description ? rejection.data.error_description : 'Unknown server error';
-        rejection.url = rejection.config.url;
-        switch (rejection.status) {
-          case 0:
-          case 500:
-          case 502:
-          case 503:
-            _this.$rootScope.$broadcast('$rest:error:communication', rejection);
-            break;
-          case 400:
-          case 405:
-            _this.$rootScope.$broadcast('$rest:error:request', rejection);
-            break;
-          case 401:
-          case 403:
-            _this.$rootScope.$broadcast('$rest:error:authorization', rejection);
-            break;
-        }
-        return _this.$q.reject(rejection);
-      };
+        return value;
     }
-    HttpInterceptor.$inject = ["$rootScope", "$q", "$log"];
-    HttpInterceptor.factory = function($rootScope, $q, $log) {
-      return new HttpInterceptor($rootScope, $q, $log);
-    };
-    HttpInterceptor.factory.$inject = ["$rootScope", "$q", "$log"];
-    return HttpInterceptor;
-  })();
-  Object.defineProperty(exports, "__esModule", {value: true});
-  exports.default = HttpInterceptor;
-  global.define = __define;
-  return module.exports;
+    return {
+        setters:[],
+        execute: function() {
+            /*@ngInject*/
+            HttpInterceptor = (function () {
+                function HttpInterceptor($rootScope, $q, $log) {
+                    var _this = this;
+                    this.$rootScope = $rootScope;
+                    this.$q = $q;
+                    this.$log = $log;
+                    this.request = function (config) {
+                        if (config.command) {
+                            _this.$log.debug(config.method + ' ' + config.command +
+                                ': params ' + JSON.stringify(config.params, replacer) +
+                                ', headers ' + JSON.stringify(config.headers, replacer) +
+                                (config.data ? ', body: ' + JSON.stringify(config.data, replacer) : ''));
+                        }
+                        return config;
+                    };
+                    this.responseError = function (rejection) {
+                        _this.$log.error('HTTP Response Error, status: ' + rejection.status + ' message: ' + JSON.stringify(rejection.data, replacer));
+                        rejection.message = rejection.data && rejection.data.error_description ? rejection.data.error_description : 'Unknown server error';
+                        rejection.url = rejection.config.url;
+                        switch (rejection.status) {
+                            case 0:
+                            case 500:
+                            case 502:
+                            case 503:
+                                _this.$rootScope.$broadcast('$rest:error:communication', rejection);
+                                break;
+                            case 400:
+                            case 405:
+                                _this.$rootScope.$broadcast('$rest:error:request', rejection);
+                                break;
+                            case 401:
+                            case 403:
+                                _this.$rootScope.$broadcast('$rest:error:authorization', rejection);
+                                break;
+                        }
+                        return _this.$q.reject(rejection);
+                    };
+                }
+                /*@ngInject*/
+                HttpInterceptor.factory = function ($rootScope, $q, $log) {
+                    return new HttpInterceptor($rootScope, $q, $log);
+                };
+                return HttpInterceptor;
+            })();
+            exports_1("default",HttpInterceptor);
+        }
+    }
 });
 
 (function() {
@@ -14678,282 +14735,294 @@ var _removeDefine = $__System.get("@@amd-helpers").createDefine();
 
 _removeDefine();
 })();
-$__System.registerDynamic("9", ["8"], true, function(req, exports, module) {
-  ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
-  var moment = req('8');
-  var DATE_FORMAT = 'DD.MM.YYYY HH:mm:ss';
-  var UtilsService = (function() {
-    function UtilsService($filter, $dateFormat) {
-      if ($filter === void 0) {
-        $filter = undefined;
-      }
-      if ($dateFormat === void 0) {
-        $dateFormat = DATE_FORMAT;
-      }
-      this.$filter = $filter;
-      this.$dateFormat = $dateFormat;
+$__System.register("9", ["8"], function(exports_1) {
+    var moment;
+    var DATE_FORMAT, UtilsService;
+    return {
+        setters:[
+            function (moment_1) {
+                moment = moment_1;
+            }],
+        execute: function() {
+            DATE_FORMAT = 'DD.MM.YYYY HH:mm:ss';
+            /**
+             * Small utils
+             */
+            /*@ngInject*/
+            UtilsService = (function () {
+                function UtilsService($filter, $dateFormat) {
+                    if ($filter === void 0) { $filter = undefined; }
+                    if ($dateFormat === void 0) { $dateFormat = DATE_FORMAT; }
+                    this.$filter = $filter;
+                    this.$dateFormat = $dateFormat;
+                }
+                /*
+                 Get form fields that changed, are part of model and convert them to form acceptable by server
+                 */
+                UtilsService.prototype.formChanges = function (form, model) {
+                    var changes = {};
+                    if (!model) {
+                        return changes;
+                    }
+                    angular.forEach(form, function (value, key) {
+                        if (key[0] !== '$' && !value.$pristine) {
+                            if (model[key] !== undefined) {
+                                changes[key] = model[key];
+                            }
+                        }
+                    });
+                    return changes;
+                };
+                /*
+                 Manually check $dirty and $valid
+                 when fields in sub-forms shouldn't be validated
+                 */
+                UtilsService.prototype.isReadyToSave = function (form, exclusions) {
+                    var valid = true;
+                    var dirty = false;
+                    exclusions = exclusions || [];
+                    angular.forEach(form, function (value, key) {
+                        if (key[0] !== '$' && exclusions.indexOf(key) < 0) {
+                            if (value.$dirty) {
+                                dirty = true;
+                            }
+                            valid = valid && value.$valid;
+                        }
+                    });
+                    return dirty && valid;
+                };
+                /*
+                 Check if object has any own properties
+                 */
+                UtilsService.prototype.isEmpty = function (obj) {
+                    if (obj == null) {
+                        return true;
+                    }
+                    if (obj.length > 0) {
+                        return false;
+                    }
+                    if (obj.length === 0) {
+                        return true;
+                    }
+                    for (var key in obj) {
+                        if (obj.hasOwnProperty(key)) {
+                            return false;
+                        }
+                        ;
+                    }
+                    return true;
+                };
+                /*
+                 Search in Array for first element (quicker than Array.prototype.filter)
+                 */
+                UtilsService.prototype.arrayFilter = function (array, expression, flag) {
+                    if (flag === void 0) { flag = true; }
+                    var resultArray = [];
+                    if (this.$filter) {
+                        resultArray = this.$filter('filter')(array, expression, flag);
+                    }
+                    return resultArray;
+                };
+                UtilsService.prototype.arraySearch = function (array, expression, flag) {
+                    if (flag === void 0) { flag = true; }
+                    var result;
+                    if (this.$filter) {
+                        result = this.$filter('filter')(array, expression, flag)[0];
+                    }
+                    return result;
+                };
+                UtilsService.prototype.formatDate = function (date) {
+                    return date ? moment(date).format(this.$dateFormat) : '';
+                };
+                return UtilsService;
+            })();
+            exports_1("default",UtilsService);
+        }
     }
-    UtilsService.$inject = ["$filter", "$dateFormat"];
-    UtilsService.prototype.formChanges = function(form, model) {
-      var changes = {};
-      if (!model) {
-        return changes;
-      }
-      angular.forEach(form, function(value, key) {
-        if (key[0] !== '$' && !value.$pristine) {
-          if (model[key] !== undefined) {
-            changes[key] = model[key];
-          }
-        }
-      });
-      return changes;
-    };
-    UtilsService.prototype.isReadyToSave = function(form, exclusions) {
-      var valid = true;
-      var dirty = false;
-      exclusions = exclusions || [];
-      angular.forEach(form, function(value, key) {
-        if (key[0] !== '$' && exclusions.indexOf(key) < 0) {
-          if (value.$dirty) {
-            dirty = true;
-          }
-          valid = valid && value.$valid;
-        }
-      });
-      return dirty && valid;
-    };
-    UtilsService.prototype.isEmpty = function(obj) {
-      if (obj == null) {
-        return true;
-      }
-      if (obj.length > 0) {
-        return false;
-      }
-      if (obj.length === 0) {
-        return true;
-      }
-      for (var key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          return false;
-        }
-        ;
-      }
-      return true;
-    };
-    UtilsService.prototype.arrayFilter = function(array, expression, flag) {
-      if (flag === void 0) {
-        flag = true;
-      }
-      var resultArray = [];
-      if (this.$filter) {
-        resultArray = this.$filter('filter')(array, expression, flag);
-      }
-      return resultArray;
-    };
-    UtilsService.prototype.arraySearch = function(array, expression, flag) {
-      if (flag === void 0) {
-        flag = true;
-      }
-      var result;
-      if (this.$filter) {
-        result = this.$filter('filter')(array, expression, flag)[0];
-      }
-      return result;
-    };
-    UtilsService.prototype.formatDate = function(date) {
-      return date ? moment(date).format(this.$dateFormat) : '';
-    };
-    return UtilsService;
-  })();
-  Object.defineProperty(exports, "__esModule", {value: true});
-  exports.default = UtilsService;
-  global.define = __define;
-  return module.exports;
 });
 
-$__System.registerDynamic("a", ["3", "4", "5", "6", "7", "9"], true, function(req, exports, module) {
-  ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
-  var angular = req('3');
-  var SettingsService_1 = req('4');
-  exports.SettingsServiceProvider = SettingsService_1.SettingsServiceProvider;
-  exports.SettingsService = SettingsService_1.SettingsService;
-  var RestService_1 = req('5');
-  exports.RestServiceProvider = RestService_1.RestServiceProvider;
-  exports.RestService = RestService_1.RestService;
-  var ConfigService_1 = req('6');
-  exports.ConfigServiceProvider = ConfigService_1.default;
-  var HttpInterceptor_1 = req('7');
-  exports.HttpInterceptor = HttpInterceptor_1.default;
-  var UtilsService_1 = req('9');
-  exports.UtilsService = UtilsService_1.default;
-  exports.module = angular.module('core', []).value('$dateFormat', 'DD.MM.YYYY HH:mm:ss').filter('dateFormat', ["$utils", function($utils) {
-    return function(value) {
-      return $utils.formatDate(value);
-    };
-  }]).config(["$httpProvider", function($httpProvider) {
-    $httpProvider.interceptors.push(HttpInterceptor_1.default.factory);
-  }]).provider('$rest', RestService_1.RestServiceProvider).provider('$config', ConfigService_1.default).service('$utils', UtilsService_1.default).provider('$settings', SettingsService_1.SettingsServiceProvider);
-  Object.defineProperty(exports, "__esModule", {value: true});
-  exports.default = exports.module;
-  global.define = __define;
-  return module.exports;
+$__System.register("a", ["3", "4", "5", "6", "7", "9"], function(exports_1) {
+    var angular, SettingsService_1, RestService_1, ConfigService_1, HttpInterceptor_1, UtilsService_1;
+    var module;
+    return {
+        setters:[
+            function (angular_1) {
+                angular = angular_1;
+            },
+            function (SettingsService_1_1) {
+                SettingsService_1 = SettingsService_1_1;
+            },
+            function (RestService_1_1) {
+                RestService_1 = RestService_1_1;
+            },
+            function (ConfigService_1_1) {
+                ConfigService_1 = ConfigService_1_1;
+            },
+            function (HttpInterceptor_1_1) {
+                HttpInterceptor_1 = HttpInterceptor_1_1;
+            },
+            function (UtilsService_1_1) {
+                UtilsService_1 = UtilsService_1_1;
+            }],
+        execute: function() {
+            exports_1("module", module = angular.module('core', [])
+                .value('$dateFormat', 'DD.MM.YYYY HH:mm:ss')
+                .filter('dateFormat', function ($utils) { return function (value) { return $utils.formatDate(value); }; })
+                .config(function ($httpProvider) {
+                $httpProvider.interceptors.push(HttpInterceptor_1.default.factory);
+            })
+                .provider('$rest', RestService_1.RestServiceProvider)
+                .provider('$config', ConfigService_1.default)
+                .service('$utils', UtilsService_1.default)
+                .provider('$settings', SettingsService_1.SettingsServiceProvider));
+            exports_1("default",module);
+            exports_1("UtilsService", UtilsService_1.default);
+            exports_1("ConfigServiceProvider", ConfigService_1.default);
+            exports_1("RestService", RestService_1.RestService);
+            exports_1("RestServiceProvider", RestService_1.RestServiceProvider);
+            exports_1("SettingsService", SettingsService_1.SettingsService);
+            exports_1("SettingsServiceProvider", SettingsService_1.SettingsServiceProvider);
+            exports_1("HttpInterceptor", HttpInterceptor_1.default);
+        }
+    }
 });
 
-$__System.registerDynamic("b", ["3"], true, function(req, exports, module) {
-  ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
-  var angular = req('3');
-  var providers = {
-    services: [],
-    filters: [],
-    directives: []
-  };
-  var components = [];
-  function Service(options) {
-    return function decorator(target) {
-      options = options ? options : {};
-      if (!options.name) {
-        throw new Error('@Service() must contain name property!');
-      }
-      providers.services.push({
-        name: options.name,
-        fn: target
-      });
-    };
-  }
-  exports.Service = Service;
-  function Filter(options) {
-    return function decorator(target, key, descriptor) {
-      options = options ? options : {};
-      if (!options.name) {
-        throw new Error('@Filter() must contain name property!');
-      }
-      providers.filters.push({
-        name: options.name,
-        fn: descriptor.value
-      });
-    };
-  }
-  exports.Filter = Filter;
-  function Inject() {
-    var dependencies = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-      dependencies[_i - 0] = arguments[_i];
-    }
-    return function decorator(target, key, descriptor) {
-      if (descriptor) {
-        descriptor.value.$inject = dependencies;
-      } else {
-        target.$inject = dependencies;
-      }
-    };
-  }
-  exports.Inject = Inject;
-  function Component(options) {
-    return function decorator(target) {
-      options = options ? options : {};
-      if (!options.selector) {
-        throw new Error('@Component() must contain selector property!');
-      }
-      if (target.$initView) {
-        target.$initView(options.selector);
-      }
-      target.$options = options;
-      target.$isComponent = true;
-      components.push(target);
-    };
-  }
-  exports.Component = Component;
-  function View(options) {
-    return function decorator(target) {
-      options = options ? options : {};
-      if (target.$isComponent) {
-        throw new Error('@View() must be placed after @Component()!');
-      }
-      target.$initView = function(selector) {
-        var defaults = {
-          templateUrl: options.templateUrl,
-          restrict: 'E',
-          scope: {},
-          bindToController: true,
-          controllerAs: 'ctrl'
+$__System.register("b", ["3"], function(exports_1) {
+    var angular;
+    var providers, components;
+    function Service(options) {
+        return function decorator(target) {
+            options = options ? options : {};
+            if (!options.name) {
+                throw new Error('@Service() must contain name property!');
+            }
+            providers.services.push({ name: options.name, fn: target });
         };
-        var name = toCamelCase(selector);
-        options.bindToController = options.bindToController || options.bind || {};
-        options.controller = target;
-        providers.directives.push({
-          name: name,
-          fn: function() {
-            return angular.extend(defaults, options);
-          }
-        });
-      };
-      target.$isView = true;
-    };
-  }
-  exports.View = View;
-  function Directive(options) {
-    return function decorator(target, key, descriptor) {
-      var name = toCamelCase(options.selector);
-      providers.directives.push({
-        name: name,
-        fn: descriptor.value
-      });
-    };
-  }
-  exports.Directive = Directive;
-  function toCamelCase(str) {
-    str = str.charAt(0).toLowerCase() + str.substring(1);
-    return str.replace(/-([a-z])/ig, function(all, letter) {
-      return letter.toUpperCase();
-    });
-  }
-  function defineModuleForTarget(target, dependencies) {
-    var name = toCamelCase(target.$options.selector);
-    var module = angular.module(name, [].concat(dependencies || []).concat(target.$options.dependencies || []));
-    module.run(target.prototype.run || (function() {}));
-    module.config(target.prototype.config || (function() {}));
-    return module;
-  }
-  function bootstrap(component) {
-    angular.element(document).ready(function() {
-      var module = defineModuleForTarget(component, ['templates']);
-      for (var _i = 0,
-          _a = providers.directives; _i < _a.length; _i++) {
-        var directive = _a[_i];
-        module.directive(directive.name, directive.fn);
-      }
-      for (var _b = 0,
-          _c = providers.services; _b < _c.length; _b++) {
-        var service = _c[_b];
-        module.service(service.name, service.fn);
-      }
-      for (var _d = 0; _d < components.length; _d++) {
-        var target = components[_d];
-        if (target.$options.selector !== component.$options.selector) {
-          defineModuleForTarget(target);
+    }
+    function Filter(options) {
+        return function decorator(target, key, descriptor) {
+            options = options ? options : {};
+            if (!options.name) {
+                throw new Error('@Filter() must contain name property!');
+            }
+            providers.filters.push({ name: options.name, fn: descriptor.value });
+        };
+    }
+    function Inject() {
+        var dependencies = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            dependencies[_i - 0] = arguments[_i];
         }
-      }
-      try {
-        angular.module('templates');
-      } catch (e) {
-        angular.module('templates', []);
-      }
-      var selector = document.querySelector(component.$options.selector);
-      angular.bootstrap(selector, [module.name], {});
-    });
-  }
-  exports.bootstrap = bootstrap;
-  global.define = __define;
-  return module.exports;
+        return function decorator(target, key, descriptor) {
+            if (descriptor) {
+                descriptor.value.$inject = dependencies;
+            }
+            else {
+                target.$inject = dependencies;
+            }
+        };
+    }
+    function Component(options) {
+        return function decorator(target) {
+            options = options ? options : {};
+            if (!options.selector) {
+                throw new Error('@Component() must contain selector property!');
+            }
+            if (target.$initView) {
+                target.$initView(options.selector);
+            }
+            target.$options = options;
+            target.$isComponent = true;
+            components.push(target);
+        };
+    }
+    function View(options) {
+        return function decorator(target) {
+            options = options ? options : {};
+            if (target.$isComponent) {
+                throw new Error('@View() must be placed after @Component()!');
+            }
+            target.$initView = function (selector) {
+                var defaults = {
+                    templateUrl: options.templateUrl,
+                    restrict: 'E',
+                    scope: {},
+                    bindToController: true,
+                    controllerAs: 'ctrl'
+                };
+                var name = toCamelCase(selector);
+                options.bindToController = options.bindToController || options.bind || {};
+                options.controller = target;
+                providers.directives.push({ name: name, fn: function () { return angular.extend(defaults, options); } });
+            };
+            target.$isView = true;
+        };
+    }
+    function Directive(options) {
+        return function decorator(target, key, descriptor) {
+            var name = toCamelCase(options.selector);
+            providers.directives.push({ name: name, fn: descriptor.value });
+        };
+    }
+    function toCamelCase(str) {
+        str = str.charAt(0).toLowerCase() + str.substring(1);
+        return str.replace(/-([a-z])/ig, function (all, letter) { return letter.toUpperCase(); });
+    }
+    function defineModuleForTarget(target, dependencies) {
+        var name = toCamelCase(target.$options.selector);
+        var module = angular.module(name, [].concat(dependencies || []).concat(target.$options.dependencies || []));
+        module.run(target.prototype.run || (function () { }));
+        module.config(target.prototype.config || (function () { }));
+        return module;
+    }
+    function bootstrap(component) {
+        angular.element(document).ready(function () {
+            var module = defineModuleForTarget(component, ['templates']);
+            for (var _i = 0, _a = providers.directives; _i < _a.length; _i++) {
+                var directive = _a[_i];
+                module.directive(directive.name, directive.fn);
+            }
+            for (var _b = 0, _c = providers.services; _b < _c.length; _b++) {
+                var service = _c[_b];
+                module.service(service.name, service.fn);
+            }
+            for (var _d = 0; _d < components.length; _d++) {
+                var target = components[_d];
+                if (target.$options.selector !== component.$options.selector) {
+                    defineModuleForTarget(target);
+                }
+            }
+            try {
+                angular.module('templates');
+            }
+            catch (e) {
+                angular.module('templates', []);
+            }
+            var selector = document.querySelector(component.$options.selector);
+            angular.bootstrap(selector, [module.name], {});
+        });
+    }
+    return {
+        setters:[
+            function (angular_1) {
+                angular = angular_1;
+            }],
+        execute: function() {
+            providers = {
+                services: [],
+                filters: [],
+                directives: []
+            };
+            components = [];
+            exports_1("Component", Component);
+            exports_1("View", View);
+            exports_1("Inject", Inject);
+            exports_1("Service", Service);
+            exports_1("Filter", Filter);
+            exports_1("Directive", Directive);
+            exports_1("bootstrap", bootstrap);
+        }
+    }
 });
 
 $__System.registerDynamic("c", [], true, function(req, exports, module) {
@@ -27619,609 +27688,799 @@ $__System.registerDynamic("c", [], true, function(req, exports, module) {
   return module.exports;
 });
 
-$__System.registerDynamic("d", [], true, function(req, exports, module) {
-  ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
-  (function(PermissionCheckType) {
-    PermissionCheckType[PermissionCheckType["One"] = 0] = "One";
-    PermissionCheckType[PermissionCheckType["All"] = 1] = "All";
-  })(exports.PermissionCheckType || (exports.PermissionCheckType = {}));
-  var PermissionCheckType = exports.PermissionCheckType;
-  (function(AccessStatus) {
-    AccessStatus[AccessStatus["NotAuthorised"] = 0] = "NotAuthorised";
-    AccessStatus[AccessStatus["Authorised"] = 1] = "Authorised";
-    AccessStatus[AccessStatus["LoginRequired"] = 2] = "LoginRequired";
-  })(exports.AccessStatus || (exports.AccessStatus = {}));
-  var AccessStatus = exports.AccessStatus;
-  var LOGIN_REDIRECT_TIMEOUT = 3000;
-  var SecurityService = (function() {
-    function SecurityService($http, $window, $location, $timeout, $queryString, $oauthToken, Organisation, config) {
-      this.$http = $http;
-      this.$window = $window;
-      this.$location = $location;
-      this.$timeout = $timeout;
-      this.$queryString = $queryString;
-      this.$oauthToken = $oauthToken;
-      this.Organisation = Organisation;
-      this.config = config;
-      this.headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': 'Basic YWNtZTphY21lc2VjcmV0'
-      };
-      this.url = config.oauthURL && config.oauthURL.trim();
-      if (this.url && this.url.charAt(this.url.length - 1) !== '/') {
-        this.url += '/';
-      }
-    }
-    SecurityService.$inject = ["$http", "$window", "$location", "$timeout", "$queryString", "$oauthToken", "Organisation", "config"];
-    SecurityService.prototype.getOrganisation = function() {
-      var _this = this;
-      return this.$http.get(this.url + 'hierarchies').then(function(result) {
-        return new _this.Organisation(result.data, 'Hierarchies');
-      });
-    };
-    SecurityService.prototype.isAuthenticated = function() {
-      return !!this.$oauthToken.getToken();
-    };
-    SecurityService.prototype.redirectToApplication = function(token) {
-      var _this = this;
-      var applicationURL;
-      var createTokenURL = function(applicationURL, applicationRoute, token) {
-        var url = applicationURL + "#" + applicationRoute;
-        url += applicationRoute.indexOf('?') >= 0 ? '&' : '?';
-        url += "token=" + token;
-        return url;
-      };
-      applicationURL = this.$location.search()['redirect_url'] || this.config.applicationURL;
-      if (!applicationURL) {
-        throw new Error('No application URL in config or redirect_url param');
-      }
-      applicationURL = createTokenURL(applicationURL, this.$location.hash(), token);
-      this.$timeout(function() {
-        return _this.$window.location.assign(applicationURL);
-      });
-    };
-    SecurityService.prototype.redirectToLogin = function(time) {
-      var _this = this;
-      if (time === void 0) {
-        time = LOGIN_REDIRECT_TIMEOUT;
-      }
-      this.$timeout(function() {
-        _this.$window.location.assign(_this.config.loginURL + '#?redirect_url=' + encodeURI('' + _this.$window.location));
-      }, time);
-    };
-    SecurityService.prototype.login = function(username, password) {
-      var _this = this;
-      var data;
-      var promise;
-      data = angular.extend(this.config, {
-        username: username,
-        password: password
-      });
-      data = this.$queryString.stringify(data);
-      var config = {
-        method: 'POST',
-        url: this.url + 'oauth/token',
-        headers: this.headers,
-        data: data
-      };
-      promise = this.$http(config).then(function(result) {
-        var token = result.data;
-        _this.redirectToApplication(token.access_token);
-      });
-      return promise;
-    };
-    SecurityService.prototype.decodeTokenContent = function(token) {
-      var data;
-      var config = {headers: this.headers};
-      data = 'token=' + token;
-      return this.$http.post(this.url + 'oauth/check_token', data, config).then(function(result) {
-        return result.data;
-      });
-    };
-    SecurityService.prototype.logout = function() {
-      this.$oauthToken.removeToken();
-      this.redirectToLogin(0);
-    };
-    SecurityService.prototype.getRefreshToken = function() {
-      var _this = this;
-      var data = {
-        grant_type: 'refresh_token',
-        refresh_token: this.$oauthToken.getRefreshToken()
-      };
-      var config = {headers: this.headers};
-      data = angular.extend(this.config, data);
-      return this.$http.post(this.url + 'oauth/token', this.$queryString.stringify(data), config).then(function(response) {
-        _this.$oauthToken.setToken(response.data);
-        return response;
-      });
-    };
-    SecurityService.prototype.revokeToken = function() {
-      var _this = this;
-      var data = {token: this.$oauthToken.getRefreshToken() ? this.$oauthToken.getRefreshToken() : this.$oauthToken.getAccessToken()};
-      data = angular.extend(this.config, data);
-      return this.$http.post(this.url + 'oauth/revoke', this.$queryString.stringify(data), this.config).then(function(response) {
-        _this.$oauthToken.removeToken();
-        return response;
-      });
-    };
-    SecurityService.prototype.getPermissions = function() {
-      return this.$oauthToken.getPermissions();
-    };
-    SecurityService.prototype.getUserPermissions = function() {
-      if (!this.userPermissions) {
-        var permissions = this.getPermissions();
-        this.userPermissions = permissions ? this.getPermissions().map(function(item) {
-          return item.toLowerCase().trim();
-        }) : [];
-      }
-      return this.userPermissions;
-    };
-    SecurityService.prototype.getUserLogin = function() {
-      return this.$oauthToken.getUserLogin();
-    };
-    SecurityService.prototype.getUserFullName = function() {
-      return this.$oauthToken.getUserFullName();
-    };
-    SecurityService.prototype.getAccessToken = function() {
-      return this.$oauthToken.getAccessToken();
-    };
-    SecurityService.prototype.stateChangeStart = function(event, toState, loginRequiredCallback, notAuthorisedCallback) {
-      var authorised;
-      var requiredPermissions = toState.access && toState.access.requiredPermissions;
-      var isLoginRequired = toState.access && toState.access.isLoginRequired || true;
-      var permissionCheckTypeString = toState.access && toState.access.permissionCheckType;
-      var permissionCheckType = PermissionCheckType[permissionCheckTypeString] || PermissionCheckType.All;
-      if (toState.access !== undefined) {
-        authorised = this.authorize(requiredPermissions, isLoginRequired, permissionCheckType);
-        if (authorised === AccessStatus.LoginRequired) {
-          if (angular.isFunction(loginRequiredCallback)) {
-            loginRequiredCallback();
-          }
-          this.redirectToLogin(this.config.redirectToLoginTimeout);
-          event.preventDefault();
-        } else if (authorised === AccessStatus.NotAuthorised) {
-          if (angular.isFunction(notAuthorisedCallback)) {
-            notAuthorisedCallback();
-          }
-          event.preventDefault();
-        }
-      }
-    };
-    SecurityService.prototype.authorize = function(requiredPermissions, isLoginRequired, permissionCheckType) {
-      if (isLoginRequired === void 0) {
-        isLoginRequired = true;
-      }
-      if (permissionCheckType === void 0) {
-        permissionCheckType = PermissionCheckType.One;
-      }
-      var user = this.getUserLogin();
-      var userPermissions = this.getUserPermissions();
-      var length;
-      var hasPermission = true;
-      var permission;
-      var i;
-      if (isLoginRequired === true && !user) {
-        return AccessStatus.LoginRequired;
-      }
-      requiredPermissions = angular.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions];
-      if ((isLoginRequired === true && user) && (requiredPermissions === undefined || requiredPermissions.length === 0)) {
-        return AccessStatus.Authorised;
-      }
-      length = requiredPermissions.length;
-      if (requiredPermissions && userPermissions) {
-        for (i = 0; i < length; i++) {
-          permission = requiredPermissions[i].toLowerCase().trim();
-          if (permissionCheckType === PermissionCheckType.All) {
-            hasPermission = hasPermission && userPermissions.indexOf(permission) > -1;
-            if (hasPermission === false) {
-              break;
-            }
-          } else if (permissionCheckType === PermissionCheckType.One) {
-            hasPermission = userPermissions.indexOf(permission) > -1;
-            if (hasPermission) {
-              break;
-            }
-          }
-        }
-        return hasPermission ? AccessStatus.Authorised : AccessStatus.NotAuthorised;
-      }
-    };
-    SecurityService.prototype.owner = function(userName) {
-      return userName === this.getUserLogin();
-    };
-    return SecurityService;
-  })();
-  exports.SecurityService = SecurityService;
-  var SecurityServiceProvider = (function() {
-    function SecurityServiceProvider() {
-      this.config = {
-        'grant_type': 'password',
-        'client_id': 'acme',
-        'scope': 'openid'
-      };
-    }
-    SecurityServiceProvider.prototype.configure = function(params) {
-      if (!(params instanceof Object)) {
-        throw new TypeError('Invalid argument: `config` must be an `Object`.');
-      }
-      angular.extend(this.config, params);
-      return this;
-    };
-    SecurityServiceProvider.prototype.$get = function($http, $window, $location, $timeout, $queryString, $oauthToken, Organisation) {
-      return new SecurityService($http, $window, $location, $timeout, $queryString, $oauthToken, Organisation, this.config);
-    };
-    SecurityServiceProvider.prototype.$get.$inject = ["$http", "$window", "$location", "$timeout", "$queryString", "$oauthToken", "Organisation"];
-    return SecurityServiceProvider;
-  })();
-  exports.SecurityServiceProvider = SecurityServiceProvider;
-  Object.defineProperty(exports, "__esModule", {value: true});
-  exports.default = SecurityService;
-  global.define = __define;
-  return module.exports;
-});
-
-$__System.registerDynamic("e", [], true, function(req, exports, module) {
-  ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
-  var OAuthTokenService = (function() {
-    function OAuthTokenService($location, $window, $settings, config) {
-      this.$location = $location;
-      this.$window = $window;
-      this.$settings = $settings;
-      this.config = config;
-    }
-    OAuthTokenService.$inject = ["$location", "$window", "$settings", "config"];
-    OAuthTokenService.prototype.setToken = function(data) {
-      this.$settings.set(this.config.name, data);
-    };
-    OAuthTokenService.prototype.getToken = function() {
-      this.restoreTokenFromURL();
-      return this.$settings.get(this.config.name);
-    };
-    OAuthTokenService.prototype.getAccessToken = function() {
-      return this.getToken() ? this.getToken().access_token : undefined;
-    };
-    OAuthTokenService.prototype.getAuthorizationHeader = function() {
-      if (!(this.getTokenType() && this.getAccessToken())) {
-        return;
-      }
-      return this.getTokenType().charAt(0).toUpperCase() + this.getTokenType().substr(1) + ' ' + this.getAccessToken();
-    };
-    OAuthTokenService.prototype.getRefreshToken = function() {
-      return this.getToken() ? this.getToken().refresh_token : undefined;
-    };
-    OAuthTokenService.prototype.getTokenType = function() {
-      return this.getToken() ? this.getToken().token_type : undefined;
-    };
-    OAuthTokenService.prototype.restoreTokenFromURL = function() {
-      var accessToken;
-      var content;
-      accessToken = this.$location.search()['token'];
-      if (accessToken && this.verifyTokenSignature(accessToken)) {
-        this.$location.search('token', null);
-        content = this.decodeToken(accessToken);
-        this.setToken({
-          access_token: accessToken,
-          token_type: 'bearer',
-          content: content
-        });
-      }
-    };
-    OAuthTokenService.prototype.verifyTokenSignature = function(token) {
-      var result = false;
-      var publicKey = this.config.publicKey;
-      try {
-        result = KJUR.jws.JWS.verify(token, publicKey, ['RS256']);
-      } catch (ex) {
-        console.error('OAuth Token Service Error: ' + ex);
-        result = false;
-      }
-      if (result === true) {
-        console.log('Token Signature Valid');
-      } else {
-        console.log('Token Signature Not Valid');
-      }
-      return result;
-    };
-    OAuthTokenService.prototype.urlBase64Decode = function(str) {
-      var output = str.replace(/-/g, '+').replace(/_/g, '/');
-      switch (output.length % 4) {
-        case 0:
-          break;
-        case 2:
-          output += '==';
-          break;
-        case 3:
-          output += '=';
-          break;
-        default:
-          throw 'Illegal base64url string!';
-      }
-      return this.$window.decodeURIComponent(this.$window.encodeURIComponent(this.$window.atob(output)));
-    };
-    OAuthTokenService.prototype.decodeToken = function(token) {
-      var parts = token.split('.');
-      if (parts.length !== 3) {
-        throw new Error('JWT must have 3 parts');
-      }
-      var decoded = this.urlBase64Decode(parts[1]);
-      if (!decoded) {
-        throw new Error('Cannot decode the token');
-      }
-      return JSON.parse(decoded);
-    };
-    OAuthTokenService.prototype.getTokenExpirationDate = function(token) {
-      var decoded;
-      decoded = this.decodeToken(token);
-      if (typeof decoded.exp === 'undefined') {
-        return null;
-      }
-      var d = new Date(0);
-      d.setUTCSeconds(decoded.exp);
-      return d;
-    };
-    OAuthTokenService.prototype.isTokenExpired = function(token, offsetSeconds) {
-      var d = this.getTokenExpirationDate(token);
-      offsetSeconds = offsetSeconds || 0;
-      if (d === null) {
-        return false;
-      }
-      return !(d.valueOf() > (new Date().valueOf() + (offsetSeconds * 1000)));
-    };
-    OAuthTokenService.prototype.removeToken = function() {
-      this.$settings.set(this.config.name);
-    };
-    OAuthTokenService.prototype.setContent = function(tokenContent) {
-      this.$settings.set(this.config.name);
-    };
-    OAuthTokenService.prototype.getContent = function() {
-      var token = this.getToken();
-      return token && token.content ? token.content : undefined;
-    };
-    OAuthTokenService.prototype.getUserLogin = function() {
-      var content = this.getContent();
-      return content && content.user_name ? content.user_name : undefined;
-    };
-    OAuthTokenService.prototype.getUserFullName = function() {
-      var content = this.getContent();
-      return content && content.full_name ? content.full_name : undefined;
-    };
-    OAuthTokenService.prototype.getPermissions = function() {
-      var content = this.getContent();
-      return content && content.authorities ? content.authorities : undefined;
-    };
-    return OAuthTokenService;
-  })();
-  exports.OAuthTokenService = OAuthTokenService;
-  var OAuthTokenServiceProvider = (function() {
-    function OAuthTokenServiceProvider() {
-      this.config = {name: 'token'};
-    }
-    OAuthTokenServiceProvider.prototype.configure = function(params) {
-      if (!(params instanceof Object)) {
-        throw new TypeError('Invalid argument: `config` must be an `Object`.');
-      }
-      angular.extend(this.config, params);
-      return this;
-    };
-    OAuthTokenServiceProvider.prototype.$get = function($location, $window, $settings) {
-      return new OAuthTokenService($location, $window, $settings, this.config);
-    };
-    OAuthTokenServiceProvider.prototype.$get.$inject = ["$location", "$window", "$settings"];
-    return OAuthTokenServiceProvider;
-  })();
-  exports.OAuthTokenServiceProvider = OAuthTokenServiceProvider;
-  Object.defineProperty(exports, "__esModule", {value: true});
-  exports.default = OAuthTokenService;
-  global.define = __define;
-  return module.exports;
-});
-
-$__System.registerDynamic("f", [], true, function(req, exports, module) {
-  ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
-  var OAuthHttpInterceptor = (function() {
-    function OAuthHttpInterceptor($rootScope, $q, $oauthToken) {
-      var _this = this;
-      this.$rootScope = $rootScope;
-      this.$q = $q;
-      this.$oauthToken = $oauthToken;
-      this.request = function(config) {
-        if (!config.url.match(/.html/) && _this.$oauthToken.getAuthorizationHeader()) {
-          config.headers = config.headers || {};
-          if (!config.headers.Authorization) {
-            config.headers.Authorization = _this.$oauthToken.getAuthorizationHeader();
-          }
-        }
-        return config;
-      };
-      this.responseError = function(rejection) {
-        var description = rejection.data && rejection.data.error_description;
-        var error = {
-          status: rejection.status,
-          message: description || 'Unknown OAuth Error ' + JSON.stringify(rejection)
-        };
-        if (400 === rejection.status && rejection.data && ('invalid_request' === rejection.data.error || 'invalid_grant' === rejection.data.error)) {
-          _this.$oauthToken.removeToken();
-          _this.$rootScope.$broadcast('$oauth:error', error);
-        }
-        if (401 === rejection.status) {
-          if ((rejection.data && 'invalid_token' === rejection.data.error) || (rejection.headers('www-authenticate') && 0 === rejection.headers('www-authenticate').indexOf('Bearer'))) {
-            error.message = 'Invalid token. Should login.';
-            _this.$rootScope.$broadcast('$oauth:error', error);
-          } else {
-            error.url = rejection.config.url;
-            _this.$rootScope.$broadcast('$http:error:authorization', error);
-          }
-        }
-        if (403 === rejection.status) {
-          _this.$rootScope.$broadcast('$oauth:error', error);
-        }
-        return _this.$q.reject(rejection);
-      };
-    }
-    OAuthHttpInterceptor.$inject = ["$rootScope", "$q", "$oauthToken"];
-    OAuthHttpInterceptor.factory = function($rootScope, $q, $oauthToken) {
-      return new OAuthHttpInterceptor($rootScope, $q, $oauthToken);
-    };
-    OAuthHttpInterceptor.factory.$inject = ["$rootScope", "$q", "$oauthToken"];
-    return OAuthHttpInterceptor;
-  })();
-  Object.defineProperty(exports, "__esModule", {value: true});
-  exports.default = OAuthHttpInterceptor;
-  global.define = __define;
-  return module.exports;
-});
-
-$__System.registerDynamic("10", [], true, function(req, exports, module) {
-  ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
-  var QueryStringService = (function() {
-    function QueryStringService() {}
-    QueryStringService.prototype.extract = function(maybeUrl) {
-      return maybeUrl.split('?')[1] || '';
-    };
-    QueryStringService.prototype.parse = function(str) {
-      if (typeof str !== 'string') {
-        return {};
-      }
-      str = str.trim().replace(/^(\?|#|&)/, '');
-      if (!str) {
-        return {};
-      }
-      return str.split('&').reduce(function(ret, param) {
-        var parts = param.replace(/\+/g, ' ').split('=');
-        var key = parts[0];
-        var val = parts[1];
-        key = decodeURIComponent(key);
-        val = val === undefined ? null : decodeURIComponent(val);
-        if (!ret.hasOwnProperty(key)) {
-          ret[key] = val;
-        } else if (Array.isArray(ret[key])) {
-          ret[key].push(val);
-        } else {
-          ret[key] = [ret[key], val];
-        }
-        return ret;
-      }, {});
-    };
-    QueryStringService.prototype.stringify = function(obj) {
-      return obj ? Object.keys(obj).sort().map(function(key) {
-        var val = obj[key];
-        if (Array.isArray(val)) {
-          return val.sort().map(function(val2) {
-            return encodeURIComponent(key) + '=' + encodeURIComponent(val2);
-          }).join('&');
-        }
-        return encodeURIComponent(key) + '=' + encodeURIComponent(val);
-      }).join('&') : '';
-    };
-    return QueryStringService;
-  })();
-  Object.defineProperty(exports, "__esModule", {value: true});
-  exports.default = QueryStringService;
-  global.define = __define;
-  return module.exports;
-});
-
-$__System.registerDynamic("11", ["d"], true, function(req, exports, module) {
-  ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
-  var SecurityService_1 = req('d');
-  function AuthorizeDirective($security) {
+$__System.register("d", [], function(exports_1) {
+    var PermissionCheckType, AccessStatus, LOGIN_REDIRECT_TIMEOUT, SecurityService, SecurityServiceProvider;
     return {
-      restrict: 'A',
-      link: function(scope, element, attrs) {
-        var makeVisible = function() {
-          element.removeClass('hidden');
-        };
-        var makeHidden = function() {
-          element.addClass('hidden');
-        };
-        var makeDisabled = function() {
-          element.attr('ng-disabled', 'true');
-        };
-        var makeEnabled = function() {
-          element.removeAttr('disabled');
-        };
-        var roles = attrs.authorize.split(',');
-        var type = attrs.authorizeAction || 'show';
-        if (roles.length > 0) {
-          var result;
-          result = $security.authorize(roles, true, SecurityService_1.PermissionCheckType[attrs.authorizeType]);
-          if (result === SecurityService_1.AccessStatus.Authorised) {
-            type === 'show' ? makeVisible() : makeEnabled();
-          } else {
-            type === 'show' ? makeHidden() : makeDisabled();
-          }
+        setters:[],
+        execute: function() {
+            (function (PermissionCheckType) {
+                PermissionCheckType[PermissionCheckType["One"] = 0] = "One";
+                PermissionCheckType[PermissionCheckType["All"] = 1] = "All";
+            })(PermissionCheckType || (PermissionCheckType = {}));
+            exports_1("PermissionCheckType", PermissionCheckType);
+            (function (AccessStatus) {
+                AccessStatus[AccessStatus["NotAuthorised"] = 0] = "NotAuthorised";
+                AccessStatus[AccessStatus["Authorised"] = 1] = "Authorised";
+                AccessStatus[AccessStatus["LoginRequired"] = 2] = "LoginRequired";
+            })(AccessStatus || (AccessStatus = {}));
+            exports_1("AccessStatus", AccessStatus);
+            LOGIN_REDIRECT_TIMEOUT = 3000;
+            /*@ngInject*/
+            SecurityService = (function () {
+                function SecurityService($http, $window, $location, $timeout, $queryString, $oauthToken, Organisation, config) {
+                    this.$http = $http;
+                    this.$window = $window;
+                    this.$location = $location;
+                    this.$timeout = $timeout;
+                    this.$queryString = $queryString;
+                    this.$oauthToken = $oauthToken;
+                    this.Organisation = Organisation;
+                    this.config = config;
+                    this.headers = {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': 'Basic YWNtZTphY21lc2VjcmV0'
+                    };
+                    this.url = config.oauthURL && config.oauthURL.trim();
+                    if (this.url && this.url.charAt(this.url.length - 1) !== '/') {
+                        this.url += '/';
+                    }
+                }
+                /**
+                 * Returns Organisation structure
+                 * @returns {promise}
+                 */
+                SecurityService.prototype.getOrganisation = function () {
+                    var _this = this;
+                    return this.$http
+                        .get(this.url + 'hierarchies')
+                        .then(function (result) {
+                        return new _this.Organisation(result.data, 'Hierarchies');
+                    });
+                };
+                /**
+                 * Verifies if the `user` is authenticated or not based on the `token`
+                 * cookie.
+                 *
+                 * @return {boolean}
+                 */
+                SecurityService.prototype.isAuthenticated = function () {
+                    return !!this.$oauthToken.getToken();
+                };
+                /**
+                 * Redirect to application page
+                 */
+                SecurityService.prototype.redirectToApplication = function (token) {
+                    var _this = this;
+                    var applicationURL;
+                    var createTokenURL = function (applicationURL, applicationRoute, token) {
+                        var url = applicationURL + "#" + applicationRoute;
+                        url += applicationRoute.indexOf('?') >= 0 ? '&' : '?';
+                        url += "token=" + token;
+                        return url;
+                    };
+                    applicationURL = this.$location.search()['redirect_url'] || this.config.applicationURL;
+                    if (!applicationURL) {
+                        throw new Error('No application URL in config or redirect_url param');
+                    }
+                    applicationURL = createTokenURL(applicationURL, this.$location.hash(), token);
+                    this.$timeout(function () { return _this.$window.location.assign(applicationURL); });
+                };
+                /**
+                 * Redirect to login page
+                 */
+                SecurityService.prototype.redirectToLogin = function (time) {
+                    var _this = this;
+                    if (time === void 0) { time = LOGIN_REDIRECT_TIMEOUT; }
+                    this.$timeout(function () {
+                        _this.$window.location.assign(_this.config.loginURL + '#?redirect_url=' + encodeURI('' + _this.$window.location));
+                    }, time);
+                };
+                /**
+                 * Retrieves the `access_token`, decodes it and stores all data in local storage
+                 *
+                 * @param {string} username
+                 * @param {string} password
+                 *
+                 * @return {promise} A response promise.
+                 */
+                SecurityService.prototype.login = function (username, password) {
+                    var _this = this;
+                    var data;
+                    var promise;
+                    data = angular.extend(this.config, { username: username, password: password });
+                    data = this.$queryString.stringify(data);
+                    var config = {
+                        method: 'POST',
+                        url: this.url + 'oauth/token',
+                        headers: this.headers,
+                        data: data
+                    };
+                    promise = this.$http(config)
+                        .then(function (result) {
+                        var token = result.data;
+                        _this.redirectToApplication(token.access_token);
+                    });
+                    return promise;
+                };
+                /**
+                 * Retrieves the profile object (authorities, user_name)
+                 *
+                 * @return {promise} A response promise.
+                 */
+                SecurityService.prototype.decodeTokenContent = function (token) {
+                    var data;
+                    var config = {
+                        headers: this.headers
+                    };
+                    data = 'token=' + token;
+                    return this.$http
+                        .post(this.url + 'oauth/check_token', data, config)
+                        .then(function (result) { return result.data; });
+                };
+                /**
+                 * Removes token and redirects to Login Page
+                 */
+                SecurityService.prototype.logout = function () {
+                    this.$oauthToken.removeToken();
+                    this.redirectToLogin(0);
+                };
+                /**
+                 * Retrieves the `refresh_token` and stores the `response.data` on local storage
+                 * using the `OAuthToken`.
+                 *
+                 * @return {promise} A response promise.
+                 */
+                SecurityService.prototype.getRefreshToken = function () {
+                    var _this = this;
+                    var data = {
+                        grant_type: 'refresh_token',
+                        refresh_token: this.$oauthToken.getRefreshToken()
+                    };
+                    var config = {
+                        headers: this.headers
+                    };
+                    data = angular.extend(this.config, data);
+                    return this.$http
+                        .post(this.url + 'oauth/token', this.$queryString.stringify(data), config)
+                        .then(function (response) {
+                        _this.$oauthToken.setToken(response.data);
+                        return response;
+                    });
+                };
+                /**
+                 * Revokes the `token` and removes the stored `token` from cookies
+                 * using the `OAuthToken`.
+                 *
+                 * @return {promise} A response promise.
+                 */
+                SecurityService.prototype.revokeToken = function () {
+                    var _this = this;
+                    var data = {
+                        token: this.$oauthToken.getRefreshToken() ? this.$oauthToken.getRefreshToken() : this.$oauthToken.getAccessToken()
+                    };
+                    data = angular.extend(this.config, data);
+                    return this.$http
+                        .post(this.url + 'oauth/revoke', this.$queryString.stringify(data), this.config)
+                        .then(function (response) {
+                        _this.$oauthToken.removeToken();
+                        return response;
+                    });
+                };
+                /**
+                 * Returns array of current user permissions
+                 *
+                 * @returns {string[]}
+                 */
+                SecurityService.prototype.getPermissions = function () {
+                    return this.$oauthToken.getPermissions();
+                };
+                SecurityService.prototype.getUserPermissions = function () {
+                    if (!this.userPermissions) {
+                        var permissions = this.getPermissions();
+                        this.userPermissions = permissions ? this.getPermissions().map(function (item) { return item.toLowerCase().trim(); }) : [];
+                    }
+                    return this.userPermissions;
+                };
+                /**
+                 * Returns user name
+                 *
+                 * @returns {string}
+                 */
+                SecurityService.prototype.getUserLogin = function () {
+                    return this.$oauthToken.getUserLogin();
+                };
+                /**
+                 * Returns user name
+                 *
+                 * @returns {string}
+                 */
+                SecurityService.prototype.getUserFullName = function () {
+                    return this.$oauthToken.getUserFullName();
+                };
+                /**
+                 * Return Access Token
+                 */
+                SecurityService.prototype.getAccessToken = function () {
+                    return this.$oauthToken.getAccessToken();
+                };
+                /**
+                 * State handling for UI router
+                 *
+                 * @param event
+                 * @param toState
+                 * @param loginRequiredCallback
+                 * @param notAuthorisedCallback
+                 */
+                SecurityService.prototype.stateChangeStart = function (event, toState, loginRequiredCallback, notAuthorisedCallback) {
+                    var authorised;
+                    var requiredPermissions = toState.access && toState.access.requiredPermissions;
+                    var isLoginRequired = toState.access && toState.access.isLoginRequired || true;
+                    var permissionCheckTypeString = toState.access && toState.access.permissionCheckType;
+                    var permissionCheckType = PermissionCheckType[permissionCheckTypeString] || PermissionCheckType.All;
+                    if (toState.access !== undefined) {
+                        authorised = this.authorize(requiredPermissions, isLoginRequired, permissionCheckType);
+                        if (authorised === AccessStatus.LoginRequired) {
+                            if (angular.isFunction(loginRequiredCallback)) {
+                                loginRequiredCallback();
+                            }
+                            this.redirectToLogin(this.config.redirectToLoginTimeout);
+                            event.preventDefault();
+                        }
+                        else if (authorised === AccessStatus.NotAuthorised) {
+                            if (angular.isFunction(notAuthorisedCallback)) {
+                                notAuthorisedCallback();
+                            }
+                            event.preventDefault();
+                        }
+                    }
+                };
+                /**
+                 * Method for checking user permissions
+                 *
+                 * @param {string, string[]} requiredPermissions
+                 * @param {boolean} isLoginRequired
+                 * @param {PermissionCheckType} permissionCheckType - all permissions (All) or one of them (One)
+                 * @returns {AccessStatus}
+                 */
+                SecurityService.prototype.authorize = function (requiredPermissions, isLoginRequired, permissionCheckType) {
+                    if (isLoginRequired === void 0) { isLoginRequired = true; }
+                    if (permissionCheckType === void 0) { permissionCheckType = PermissionCheckType.One; }
+                    var user = this.getUserLogin();
+                    var userPermissions = this.getUserPermissions();
+                    var length;
+                    var hasPermission = true;
+                    var permission;
+                    var i;
+                    /*
+                     Login required but no user logged in
+                     */
+                    if (isLoginRequired === true && !user) {
+                        return AccessStatus.LoginRequired;
+                    }
+                    /*
+                     Login required, user logged in but no permissions required
+                     */
+                    requiredPermissions = angular.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions];
+                    if ((isLoginRequired === true && user) && (requiredPermissions === undefined || requiredPermissions.length === 0)) {
+                        return AccessStatus.Authorised;
+                    }
+                    length = requiredPermissions.length;
+                    /*
+                     Permission required
+                     */
+                    if (requiredPermissions && userPermissions) {
+                        for (i = 0; i < length; i++) {
+                            permission = requiredPermissions[i].toLowerCase().trim();
+                            if (permissionCheckType === PermissionCheckType.All) {
+                                hasPermission = hasPermission && userPermissions.indexOf(permission) > -1;
+                                /*
+                                 if all the permissions are required and hasPermission is false there is no point carrying on
+                                 */
+                                if (hasPermission === false) {
+                                    break;
+                                }
+                            }
+                            else if (permissionCheckType === PermissionCheckType.One) {
+                                hasPermission = userPermissions.indexOf(permission) > -1;
+                                /*
+                                 if we only need one of the permissions and we have it there is no point carrying on
+                                 */
+                                if (hasPermission) {
+                                    break;
+                                }
+                            }
+                        }
+                        return hasPermission ? AccessStatus.Authorised : AccessStatus.NotAuthorised;
+                    }
+                };
+                /**
+                 * Check if passed user is current user
+                 */
+                SecurityService.prototype.owner = function (userName) {
+                    return userName === this.getUserLogin();
+                };
+                return SecurityService;
+            })();
+            exports_1("SecurityService", SecurityService);
+            SecurityServiceProvider = (function () {
+                function SecurityServiceProvider() {
+                    this.config = {
+                        'grant_type': 'password',
+                        'client_id': 'acme',
+                        'scope': 'openid'
+                    };
+                }
+                /**
+                 * Configure.
+                 *
+                 * @param {object} params - An `object` of params to extend.
+                 */
+                SecurityServiceProvider.prototype.configure = function (params) {
+                    if (!(params instanceof Object)) {
+                        throw new TypeError('Invalid argument: `config` must be an `Object`.');
+                    }
+                    angular.extend(this.config, params);
+                    return this;
+                };
+                /*@ngInject*/
+                SecurityServiceProvider.prototype.$get = function ($http, $window, $location, $timeout, $queryString, $oauthToken, Organisation) {
+                    return new SecurityService($http, $window, $location, $timeout, $queryString, $oauthToken, Organisation, this.config);
+                };
+                return SecurityServiceProvider;
+            })();
+            exports_1("SecurityServiceProvider", SecurityServiceProvider);
+            exports_1("default",SecurityService);
         }
-      }
-    };
-  }
-  AuthorizeDirective.$inject = ["$security"];
-  Object.defineProperty(exports, "__esModule", {value: true});
-  exports.default = AuthorizeDirective;
-  global.define = __define;
-  return module.exports;
-});
-
-$__System.registerDynamic("12", ["3", "a", "c", "d", "e", "f", "10", "11"], true, function(req, exports, module) {
-  ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
-  var angular = req('3');
-  var core = req('a');
-  req('c');
-  var SecurityService_1 = req('d');
-  var OAuthTokenService_1 = req('e');
-  var OAuthInterceptor_1 = req('f');
-  var QueryStringService_1 = req('10');
-  var AuthorizeDirective_1 = req('11');
-  var module = angular.module('fds.security', [core.module.name]).config(["$httpProvider", "$configProvider", "$securityProvider", function($httpProvider, $configProvider, $securityProvider) {
-    var config = $configProvider.$get();
-    $securityProvider.configure(config);
-    $httpProvider.interceptors.push(OAuthInterceptor_1.default.factory);
-  }]).run(["$rootScope", "$security", function($rootScope, $security) {
-    $rootScope.authorize = $security.authorize.bind($security);
-    $rootScope.owner = $security.owner.bind($security);
-    if ($security.isAuthenticated()) {
-      $rootScope.userLogin = $security.getUserLogin();
-      $rootScope.userFullName = $security.getUserFullName();
     }
-  }]).provider('$security', SecurityService_1.SecurityServiceProvider).provider('$oauthToken', OAuthTokenService_1.OAuthTokenServiceProvider).service('$queryString', QueryStringService_1.default).directive('authorize', AuthorizeDirective_1.default);
-  Object.defineProperty(exports, "__esModule", {value: true});
-  exports.default = module;
-  global.define = __define;
-  return module.exports;
 });
 
-$__System.registerDynamic("1", ["a", "b", "12"], true, function(req, exports, module) {
-  ;
-  var global = this,
-      __define = global.define;
-  global.define = undefined;
-  function __export(m) {
-    for (var p in m)
-      if (!exports.hasOwnProperty(p))
-        exports[p] = m[p];
-  }
-  __export(req('a'));
-  __export(req('b'));
-  __export(req('12'));
-  global.define = __define;
-  return module.exports;
+$__System.register("e", [], function(exports_1) {
+    var OAuthTokenService, OAuthTokenServiceProvider;
+    return {
+        setters:[],
+        execute: function() {
+            /*@ngInject*/
+            OAuthTokenService = (function () {
+                function OAuthTokenService($location, $window, $settings, config) {
+                    this.$location = $location;
+                    this.$window = $window;
+                    this.$settings = $settings;
+                    this.config = config;
+                }
+                /**
+                 * Set token.
+                 *
+                 *  @params {object} - Access token
+                 */
+                OAuthTokenService.prototype.setToken = function (data) {
+                    this.$settings.set(this.config.name, data);
+                };
+                /**
+                 * Get token.
+                 *
+                 *  @returns {object} - Access token
+                 */
+                OAuthTokenService.prototype.getToken = function () {
+                    this.restoreTokenFromURL();
+                    return this.$settings.get(this.config.name);
+                };
+                /**
+                 * Get accessToken.
+                 *
+                 * @returns {string} - Access token
+                 */
+                OAuthTokenService.prototype.getAccessToken = function () {
+                    return this.getToken() ? this.getToken().access_token : undefined;
+                };
+                /**
+                 * Get authorization Header.
+                 *
+                 * @returns {string} - 'Authorization' Header e.g 'Bearer XXX'
+                 */
+                OAuthTokenService.prototype.getAuthorizationHeader = function () {
+                    if (!(this.getTokenType() && this.getAccessToken())) {
+                        return;
+                    }
+                    return this.getTokenType().charAt(0).toUpperCase() + this.getTokenType().substr(1) + ' ' + this.getAccessToken();
+                };
+                /**
+                 * Get refresh Token.
+                 *
+                 * @returns {string} - 'Refresh token
+                 */
+                OAuthTokenService.prototype.getRefreshToken = function () {
+                    return this.getToken() ? this.getToken().refresh_token : undefined;
+                };
+                /**
+                 * Get tokenType.
+                 *
+                 * @returns {string} - Token type e.g. 'bearer', 'refresh'
+                 */
+                OAuthTokenService.prototype.getTokenType = function () {
+                    return this.getToken() ? this.getToken().token_type : undefined;
+                };
+                OAuthTokenService.prototype.restoreTokenFromURL = function () {
+                    var accessToken;
+                    var content;
+                    accessToken = this.$location.search()['token'];
+                    if (accessToken && this.verifyTokenSignature(accessToken)) {
+                        this.$location.search('token', null);
+                        content = this.decodeToken(accessToken);
+                        this.setToken({
+                            access_token: accessToken,
+                            token_type: 'bearer',
+                            content: content
+                        });
+                    }
+                };
+                OAuthTokenService.prototype.verifyTokenSignature = function (token) {
+                    var result = false;
+                    var publicKey = this.config.publicKey;
+                    try {
+                        result = KJUR.jws.JWS.verify(token, publicKey, ['RS256']);
+                    }
+                    catch (ex) {
+                        console.error('OAuth Token Service Error: ' + ex);
+                        result = false;
+                    }
+                    if (result === true) {
+                        console.log('Token Signature Valid');
+                    }
+                    else {
+                        console.log('Token Signature Not Valid');
+                    }
+                    return result;
+                };
+                OAuthTokenService.prototype.urlBase64Decode = function (str) {
+                    var output = str.replace(/-/g, '+').replace(/_/g, '/');
+                    switch (output.length % 4) {
+                        case 0:
+                            break;
+                        case 2:
+                            output += '==';
+                            break;
+                        case 3:
+                            output += '=';
+                            break;
+                        default:
+                            throw 'Illegal base64url string!';
+                    }
+                    return this.$window.decodeURIComponent(this.$window.encodeURIComponent(this.$window.atob(output)));
+                };
+                OAuthTokenService.prototype.decodeToken = function (token) {
+                    var parts = token.split('.');
+                    if (parts.length !== 3) {
+                        throw new Error('JWT must have 3 parts');
+                    }
+                    var decoded = this.urlBase64Decode(parts[1]);
+                    if (!decoded) {
+                        throw new Error('Cannot decode the token');
+                    }
+                    return JSON.parse(decoded);
+                };
+                OAuthTokenService.prototype.getTokenExpirationDate = function (token) {
+                    var decoded;
+                    decoded = this.decodeToken(token);
+                    if (typeof decoded.exp === 'undefined') {
+                        return null;
+                    }
+                    var d = new Date(0); // The 0 here is the key, which sets the date to the epoch
+                    d.setUTCSeconds(decoded.exp);
+                    return d;
+                };
+                OAuthTokenService.prototype.isTokenExpired = function (token, offsetSeconds) {
+                    var d = this.getTokenExpirationDate(token);
+                    offsetSeconds = offsetSeconds || 0;
+                    if (d === null) {
+                        return false;
+                    }
+                    return !(d.valueOf() > (new Date().valueOf() + (offsetSeconds * 1000)));
+                };
+                /**
+                 * Remove token.
+                 */
+                OAuthTokenService.prototype.removeToken = function () {
+                    this.$settings.set(this.config.name);
+                };
+                OAuthTokenService.prototype.setContent = function (tokenContent) {
+                    this.$settings.set(this.config.name);
+                };
+                OAuthTokenService.prototype.getContent = function () {
+                    var token = this.getToken();
+                    return token && token.content ? token.content : undefined;
+                };
+                OAuthTokenService.prototype.getUserLogin = function () {
+                    var content = this.getContent();
+                    return content && content.user_name ? content.user_name : undefined;
+                };
+                OAuthTokenService.prototype.getUserFullName = function () {
+                    var content = this.getContent();
+                    return content && content.full_name ? content.full_name : undefined;
+                };
+                OAuthTokenService.prototype.getPermissions = function () {
+                    var content = this.getContent();
+                    return content && content.authorities ? content.authorities : undefined;
+                };
+                return OAuthTokenService;
+            })();
+            OAuthTokenServiceProvider = (function () {
+                function OAuthTokenServiceProvider() {
+                    this.config = {
+                        name: 'token'
+                    };
+                }
+                /**
+                 * Configure.
+                 *
+                 * @param {object} params - An `object` of params to extend.
+                 */
+                OAuthTokenServiceProvider.prototype.configure = function (params) {
+                    if (!(params instanceof Object)) {
+                        throw new TypeError('Invalid argument: `config` must be an `Object`.');
+                    }
+                    angular.extend(this.config, params);
+                    return this;
+                };
+                /*@ngInject*/
+                OAuthTokenServiceProvider.prototype.$get = function ($location, $window, $settings) {
+                    return new OAuthTokenService($location, $window, $settings, this.config);
+                };
+                return OAuthTokenServiceProvider;
+            })();
+            exports_1("default",OAuthTokenService);
+            exports_1("OAuthTokenServiceProvider", OAuthTokenServiceProvider);
+            exports_1("OAuthTokenService", OAuthTokenService);
+        }
+    }
+});
+
+/**
+ * HTTP Interceptor for global OAuth handling
+ */
+$__System.register("f", [], function(exports_1) {
+    var OAuthHttpInterceptor;
+    return {
+        setters:[],
+        execute: function() {
+            /*@ngInject*/
+            OAuthHttpInterceptor = (function () {
+                function OAuthHttpInterceptor($rootScope, $q, $oauthToken) {
+                    var _this = this;
+                    this.$rootScope = $rootScope;
+                    this.$q = $q;
+                    this.$oauthToken = $oauthToken;
+                    this.request = function (config) {
+                        /*
+                         Inject `Authorization` header.
+                         */
+                        if (!config.url.match(/.html/) && _this.$oauthToken.getAuthorizationHeader()) {
+                            config.headers = config.headers || {};
+                            if (!config.headers.Authorization) {
+                                config.headers.Authorization = _this.$oauthToken.getAuthorizationHeader();
+                            }
+                        }
+                        return config;
+                    };
+                    this.responseError = function (rejection) {
+                        var description = rejection.data && rejection.data.error_description;
+                        var error = {
+                            status: rejection.status,
+                            message: description || 'Unknown OAuth Error ' + JSON.stringify(rejection)
+                        };
+                        /*
+                         Catch `invalid_request` and `invalid_grant` errors and ensure that the `token` is removed.
+                         */
+                        if (400 === rejection.status && rejection.data &&
+                            ('invalid_request' === rejection.data.error || 'invalid_grant' === rejection.data.error)) {
+                            _this.$oauthToken.removeToken();
+                            _this.$rootScope.$broadcast('$oauth:error', error);
+                        }
+                        /*
+                         Catch `invalid_token` and `unauthorized` errors.
+                         The token isn't removed here so it can be refreshed when the `invalid_token` error occurs.
+                         */
+                        if (401 === rejection.status) {
+                            if ((rejection.data && 'invalid_token' === rejection.data.error) ||
+                                (rejection.headers('www-authenticate') && 0 === rejection.headers('www-authenticate').indexOf('Bearer'))) {
+                                error.message = 'Invalid token. Should login.';
+                                _this.$rootScope.$broadcast('$oauth:error', error);
+                            }
+                            else {
+                                error.url = rejection.config.url;
+                                _this.$rootScope.$broadcast('$http:error:authorization', error);
+                            }
+                        }
+                        if (403 === rejection.status) {
+                            _this.$rootScope.$broadcast('$oauth:error', error);
+                        }
+                        return _this.$q.reject(rejection);
+                    };
+                }
+                /*@ngInject*/
+                OAuthHttpInterceptor.factory = function ($rootScope, $q, $oauthToken) {
+                    return new OAuthHttpInterceptor($rootScope, $q, $oauthToken);
+                };
+                return OAuthHttpInterceptor;
+            })();
+            exports_1("default",OAuthHttpInterceptor);
+        }
+    }
+});
+
+$__System.register("10", [], function(exports_1) {
+    var QueryStringService;
+    return {
+        setters:[],
+        execute: function() {
+            /*@ngInject*/
+            QueryStringService = (function () {
+                function QueryStringService() {
+                }
+                QueryStringService.prototype.extract = function (maybeUrl) {
+                    return maybeUrl.split('?')[1] || '';
+                };
+                QueryStringService.prototype.parse = function (str) {
+                    if (typeof str !== 'string') {
+                        return {};
+                    }
+                    str = str.trim().replace(/^(\?|#|&)/, '');
+                    if (!str) {
+                        return {};
+                    }
+                    return str.split('&').reduce(function (ret, param) {
+                        var parts = param.replace(/\+/g, ' ').split('=');
+                        var key = parts[0];
+                        var val = parts[1];
+                        key = decodeURIComponent(key);
+                        val = val === undefined ? null : decodeURIComponent(val);
+                        if (!ret.hasOwnProperty(key)) {
+                            ret[key] = val;
+                        }
+                        else if (Array.isArray(ret[key])) {
+                            ret[key].push(val);
+                        }
+                        else {
+                            ret[key] = [ret[key], val];
+                        }
+                        return ret;
+                    }, {});
+                };
+                QueryStringService.prototype.stringify = function (obj) {
+                    return obj ? Object.keys(obj).sort().map(function (key) {
+                        var val = obj[key];
+                        if (Array.isArray(val)) {
+                            return val.sort().map(function (val2) {
+                                return encodeURIComponent(key) + '=' + encodeURIComponent(val2);
+                            }).join('&');
+                        }
+                        return encodeURIComponent(key) + '=' + encodeURIComponent(val);
+                    }).join('&') : '';
+                };
+                return QueryStringService;
+            })();
+            exports_1("default",QueryStringService);
+        }
+    }
+});
+
+$__System.register("11", ["d"], function(exports_1) {
+    var SecurityService_1;
+    /*@ngInject*/
+    function AuthorizeDirective($security) {
+        return {
+            restrict: 'A',
+            link: function (scope, element, attrs) {
+                var makeVisible = function () {
+                    element.removeClass('hidden');
+                };
+                var makeHidden = function () {
+                    element.addClass('hidden');
+                };
+                var makeDisabled = function () {
+                    element.attr('ng-disabled', 'true');
+                };
+                var makeEnabled = function () {
+                    element.removeAttr('disabled');
+                };
+                var roles = attrs.authorize.split(',');
+                var type = attrs.authorizeAction || 'show';
+                if (roles.length > 0) {
+                    var result;
+                    result = $security.authorize(roles, true, SecurityService_1.PermissionCheckType[attrs.authorizeType]);
+                    if (result === SecurityService_1.AccessStatus.Authorised) {
+                        type === 'show' ? makeVisible() : makeEnabled();
+                    }
+                    else {
+                        type === 'show' ? makeHidden() : makeDisabled();
+                    }
+                }
+            }
+        };
+    }
+    return {
+        setters:[
+            function (SecurityService_1_1) {
+                SecurityService_1 = SecurityService_1_1;
+            }],
+        execute: function() {
+            exports_1("default",AuthorizeDirective);
+        }
+    }
+});
+
+$__System.register("12", ["3", "a", "c", "d", "e", "f", "10", "11"], function(exports_1) {
+    var angular, core, SecurityService_1, OAuthTokenService_1, OAuthInterceptor_1, QueryStringService_1, AuthorizeDirective_1;
+    var module;
+    return {
+        setters:[
+            function (angular_1) {
+                angular = angular_1;
+            },
+            function (core_1) {
+                core = core_1;
+            },
+            function (_1) {},
+            function (SecurityService_1_1) {
+                SecurityService_1 = SecurityService_1_1;
+            },
+            function (OAuthTokenService_1_1) {
+                OAuthTokenService_1 = OAuthTokenService_1_1;
+            },
+            function (OAuthInterceptor_1_1) {
+                OAuthInterceptor_1 = OAuthInterceptor_1_1;
+            },
+            function (QueryStringService_1_1) {
+                QueryStringService_1 = QueryStringService_1_1;
+            },
+            function (AuthorizeDirective_1_1) {
+                AuthorizeDirective_1 = AuthorizeDirective_1_1;
+            }],
+        execute: function() {
+            module = angular.module('fds.security', [core.module.name])
+                .config(function ($httpProvider, $configProvider, $securityProvider) {
+                var config = $configProvider.$get();
+                $securityProvider.configure(config);
+                $httpProvider.interceptors.push(OAuthInterceptor_1.default.factory);
+            })
+                .run(function ($rootScope, $security) {
+                $rootScope.authorize = $security.authorize.bind($security);
+                $rootScope.owner = $security.owner.bind($security);
+                if ($security.isAuthenticated()) {
+                    $rootScope.userLogin = $security.getUserLogin();
+                    $rootScope.userFullName = $security.getUserFullName();
+                }
+            })
+                .provider('$security', SecurityService_1.SecurityServiceProvider)
+                .provider('$oauthToken', OAuthTokenService_1.OAuthTokenServiceProvider)
+                .service('$queryString', QueryStringService_1.default)
+                .directive('authorize', AuthorizeDirective_1.default);
+            exports_1("default",module);
+        }
+    }
+});
+
+$__System.register("1", ["a", "b", "12"], function(exports_1) {
+    function exportStar_1(m) {
+        var exports = {};
+        for(var n in m) {
+            if (n !== "default") exports[n] = m[n];
+        }
+        exports_1(exports);
+    }
+    return {
+        setters:[
+            function (core_1_1) {
+                exportStar_1(core_1_1);
+            },
+            function (decorators_1_1) {
+                exportStar_1(decorators_1_1);
+            },
+            function (security_1_1) {
+                exportStar_1(security_1_1);
+            }],
+        execute: function() {
+        }
+    }
 });
 
 })

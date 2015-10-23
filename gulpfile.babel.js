@@ -157,7 +157,7 @@ gulp.task('typescript', () => {
 
     return merge([
         result.dts.pipe(gulp.dest(config.dist.scripts)),
-        result.js.pipe($.ngAnnotate()).pipe(gulp.dest(config.dist.scripts))
+        result.js.pipe(gulp.dest(config.dist.scripts))
     ]);
 });
 
@@ -168,10 +168,11 @@ gulp.task('typescript', () => {
 gulp.task('bundle', ['typescript'], (done) => {
     let builder = new Builder(config.root);
 
-    builder.loadConfig(config.systemjs)
+    builder
+        .loadConfig(config.systemjs)
         .then(() => {
             return builder.buildStatic(
-                `${config.dist.scripts}index.js`,
+                `${config.src.basePath}index.ts`,
                 `${config.dist.scripts}bundle.js`, {
                     minify: false,
                     mangle: false,

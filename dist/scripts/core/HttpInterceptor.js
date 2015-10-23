@@ -46,12 +46,10 @@ var HttpInterceptor = (function () {
             return _this.$q.reject(rejection);
         };
     }
-    HttpInterceptor.$inject = ["$rootScope", "$q", "$log"];
     /*@ngInject*/
     HttpInterceptor.factory = function ($rootScope, $q, $log) {
         return new HttpInterceptor($rootScope, $q, $log);
     };
-    HttpInterceptor.factory.$inject = ["$rootScope", "$q", "$log"];
     return HttpInterceptor;
 })();
 Object.defineProperty(exports, "__esModule", { value: true });

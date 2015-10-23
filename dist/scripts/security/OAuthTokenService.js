@@ -6,7 +6,6 @@ var OAuthTokenService = (function () {
         this.$settings = $settings;
         this.config = config;
     }
-    OAuthTokenService.$inject = ["$location", "$window", "$settings", "config"];
     /**
      * Set token.
      *
@@ -186,7 +185,6 @@ var OAuthTokenServiceProvider = (function () {
     OAuthTokenServiceProvider.prototype.$get = function ($location, $window, $settings) {
         return new OAuthTokenService($location, $window, $settings, this.config);
     };
-    OAuthTokenServiceProvider.prototype.$get.$inject = ["$location", "$window", "$settings"];
     return OAuthTokenServiceProvider;
 })();
 exports.OAuthTokenServiceProvider = OAuthTokenServiceProvider;

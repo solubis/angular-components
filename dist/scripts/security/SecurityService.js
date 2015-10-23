@@ -30,7 +30,6 @@ var SecurityService = (function () {
             this.url += '/';
         }
     }
-    SecurityService.$inject = ["$http", "$window", "$location", "$timeout", "$queryString", "$oauthToken", "Organisation", "config"];
     /**
      * Returns Organisation structure
      * @returns {promise}
@@ -332,7 +331,6 @@ var SecurityServiceProvider = (function () {
     SecurityServiceProvider.prototype.$get = function ($http, $window, $location, $timeout, $queryString, $oauthToken, Organisation) {
         return new SecurityService($http, $window, $location, $timeout, $queryString, $oauthToken, Organisation, this.config);
     };
-    SecurityServiceProvider.prototype.$get.$inject = ["$http", "$window", "$location", "$timeout", "$queryString", "$oauthToken", "Organisation"];
     return SecurityServiceProvider;
 })();
 exports.SecurityServiceProvider = SecurityServiceProvider;

@@ -48,7 +48,6 @@ var RestService = (function () {
         }
         $log.info('REST ' + this.url);
     }
-    RestService.$inject = ["$http", "$q", "$window", "$rootScope", "$log", "config"];
     RestService.prototype.init = function () {
         var _this = this;
         return this.get({ command: 'version' })
@@ -169,7 +168,6 @@ var RestServiceProvider = (function () {
     RestServiceProvider.prototype.$get = function ($http, $q, $window, $rootScope, $log) {
         return new RestService($http, $q, $window, $rootScope, $log, this.config);
     };
-    RestServiceProvider.prototype.$get.$inject = ["$http", "$q", "$window", "$rootScope", "$log"];
     return RestServiceProvider;
 })();
 exports.RestServiceProvider = RestServiceProvider;
