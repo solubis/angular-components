@@ -33,7 +33,7 @@ const config = {
      */
     dist: {
         basePath: `${root}/dist/`,
-        scripts: `${root}/dist/`,
+        scripts: `${root}/dist/scripts/`,
         styles: `${root}/dist/styles/`,
         images: `${root}/dist/images/`,
         data: `${root}/dist/data/`,

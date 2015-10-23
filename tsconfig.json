@@ -8,7 +8,7 @@
         "target": "ES5",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "outDir": "dist"
+        "outDir": "dist/scripts"
     },
     "filesGlob": [
         "src/**/*.ts",
