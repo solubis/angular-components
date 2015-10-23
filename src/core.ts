@@ -1,6 +1,7 @@
 /**
  * Module with services for error handler, local storage settings and small utils
  */
+ import * as angular from 'angular';
 
 import { SettingsServiceProvider, SettingsService } from './core/SettingsService';
 import { RestServiceProvider, RestService } from './core/RestService';

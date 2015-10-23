@@ -1,12 +1,13 @@
+import * as angular from 'angular';
+import * as core from './core';
+
+import 'jsrsasign';
+
 import { SecurityServiceProvider } from './security/SecurityService';
 import { OAuthTokenServiceProvider } from './security/OAuthTokenService';
 import OAuthInterceptor from './security/OAuthInterceptor';
 import QueryStringService from './security/QueryStringService';
 import AuthorizeDirective from './security/AuthorizeDirective';
-
-import * as core from './core';
-
-import 'jsrsasign';
 
 let module = angular.module('fds.security', [core.module.name])
 
