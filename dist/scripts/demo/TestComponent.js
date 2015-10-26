@@ -31,10 +31,8 @@ var TestComponent = (function () {
     TestComponent = __decorate([
         decorators_1.Component({
             selector: 'test-component',
+            templateUrl: 'test.html',
             dependencies: ['parent']
-        }),
-        decorators_1.View({
-            templateUrl: 'test.html'
         }),
         decorators_1.Inject('childService', '$http', '$log'), 
         __metadata('design:paramtypes', [TestService, Function, Object])
@@ -43,11 +41,7 @@ var TestComponent = (function () {
 })();
 var TestService = (function () {
     function TestService() {
-        this.title = 'myService';
     }
-    TestService.prototype.getName = function () {
-        return this.title;
-    };
     TestService = __decorate([
         decorators_1.Service({
             name: 'myService'
@@ -56,4 +50,17 @@ var TestService = (function () {
     ], TestService);
     return TestService;
 })();
+implemnts;
+IService;
+{
+    title: string;
+    constructor();
+    {
+        this.title = 'myService';
+    }
+    getName();
+    {
+        return this.title;
+    }
+}
 decorators_1.bootstrap(TestComponent);

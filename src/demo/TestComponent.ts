@@ -1,14 +1,12 @@
-import {Component, View, Service, Inject, bootstrap } from '../decorators';
+import {Component, Service, Inject, bootstrap } from '../decorators';
 import IService from './IService';
 
 import './Parent';
 
 @Component({
     selector: 'test-component',
+    templateUrl: 'test.html',
     dependencies: ['parent']
-})
-@View({
-    templateUrl: 'test.html'
 })
 @Inject('childService', '$http', '$log')
 class TestComponent {
