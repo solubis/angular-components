@@ -41,7 +41,11 @@ var TestComponent = (function () {
 })();
 var TestService = (function () {
     function TestService() {
+        this.title = 'myService';
     }
+    TestService.prototype.getName = function () {
+        return this.title;
+    };
     TestService = __decorate([
         decorators_1.Service({
             name: 'myService'
@@ -50,17 +54,4 @@ var TestService = (function () {
     ], TestService);
     return TestService;
 })();
-implemnts;
-IService;
-{
-    title: string;
-    constructor();
-    {
-        this.title = 'myService';
-    }
-    getName();
-    {
-        return this.title;
-    }
-}
 decorators_1.bootstrap(TestComponent);

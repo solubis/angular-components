@@ -20,7 +20,7 @@ gulp.task('server', () => {
     let server = browserSync.create(SERVER_NAME);
     let browser = 'google chrome';
     let files = [
-        config.src.files,
+        config.src.watchFiles,
         config.typescript,
         config.systemjs
     ];
@@ -29,7 +29,7 @@ gulp.task('server', () => {
         open: true,
         port: 3000,
         directory: true,
-        notify: true,
+        notify: false,
         startPath: config.indexHTML,
         files: files,
         server: {
@@ -62,37 +62,13 @@ gulp.task('clean', (done) => {
  * e.g. (favicon, etc.) into the `dist` directory.
  */
 gulp.task('copy', () => {
-    return gulp.src(
-            [config.src.basePath + '*.{ico,png,txt}',
-                config.src.basePath + '404.html'
-            ])
-        .pipe(gulp.dest(config.dist.basePath));
+    return merge[
+        gulp.src(config.src.baseFiles).pipe(gulp.dest(config.dist.basePath)),
+        gulp.src(config.src.images).pipe(gulp.dest(config.dist.images)),
+        gulp.src(config.src.data).pipe(gulp.dest(config.dist.data)),
+        gulp.src(config.src.fonts).pipe(gulp.dest(config.dist.fonts))
+    ];
 });
-
-/**
- * The 'images' task optimize and copies images to `dist` directory.
- */
-gulp.task('images', () => {
-    return gulp.src(config.src.images)
-        .pipe(gulp.dest(config.dist.images));
-});
-
-/**
- * The 'data' task optimize and copies images to `dist` directory.
- */
-gulp.task('data', () => {
-    return gulp.src(config.src.data)
-        .pipe(gulp.dest(config.dist.data));
-});
-
-/**
- * The 'fonts' task copies fonts to `dist` directory.
- */
-gulp.task('fonts', () => {
-    return gulp.src(config.src.fonts)
-        .pipe(gulp.dest(config.dist.fonts));
-});
-
 
 /**
  * The 'compile' task compile all js, css and html files.
@@ -112,7 +88,7 @@ gulp.task('compile', ['bundle', 'html', 'sass'], () => {
  * HTML code.
  */
 gulp.task('htmlhint', () => {
-    return gulp.src(config.src.html)
+    return gulp.src(config.src.templates)
         .pipe($.htmlhint({
             'doctype-first': false,
             'spec-char-escape': false
@@ -125,34 +101,42 @@ gulp.task('htmlhint', () => {
  * The HTML convert templates to JS task.
  */
 
-gulp.task('html', () => {
-    return gulp.src(config.src.html)
+gulp.task('html', ['htmlhint'], () => {
+    return gulp.src(config.src.templates)
         .pipe($.minifyHtml({
             empty: true,
             spare: true,
             quotes: true
         }))
         .pipe($.ngHtml2js({
-            moduleName: config.templatesModuleName
+            moduleName: config.templatesModuleName,
+            prefix: 'modules/'
         }))
         .pipe($.concat(`${config.templatesModuleName}.js`))
         .pipe(gulp.dest(config.dist.scripts));
 });
 
 /**
+ * The 'TSLint' task.
+ */
+gulp.task('tslint', () => {
+    return gulp.src(config.src.typescripts)
+        .pipe($.plumber())
+        .pipe($.tslint())
+        .pipe($.tslint.report('prose', {
+            emitError: false
+        }));
+});
+
+/**
  * The 'Typescript' task.
  */
-gulp.task('typescript', () => {
+gulp.task('typescript', ['tslint'], () => {
     let project = $.typescript.createProject(
         config.typescript
     );
 
     let result = gulp.src(config.src.typescripts)
-        .pipe($.plumber())
-        .pipe($.tslint())
-        .pipe($.tslint.report('prose', {
-            emitError: false
-        }))
         .pipe($.typescript(project));
 
     return merge([
@@ -165,7 +149,7 @@ gulp.task('typescript', () => {
  * The 'Bundle' task.
  */
 
-gulp.task('bundle', ['typescript'], (done) => {
+gulp.task('bundle', ['tslint'], (done) => {
     let builder = new Builder(config.root);
 
     builder
@@ -189,7 +173,7 @@ gulp.task('bundle', ['typescript'], (done) => {
  */
 gulp.task('build', (done) => {
     runSequence(
-        ['clean'], ['compile', 'copy', 'images', 'fonts', 'data'],
+        ['clean'], config.build,
         done
     );
 });
