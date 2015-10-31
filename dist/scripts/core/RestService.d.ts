@@ -1,7 +1,6 @@
 export interface IRequestConfig extends ng.IRequestConfig {
     command: string;
     mockup?: boolean;
-    headers?: any;
 }
 declare class RestService {
     private $http;
@@ -36,7 +35,7 @@ declare class RestService {
      * @param config - config {command: 'REST server endpoint command', params, data}
      * @returns {promise}
      */
-    request(method: string, params: string | IRequestConfig): ng.IPromise<any>;
+    request(method: string, params: IRequestConfig | string): ng.IPromise<any>;
     post(params: any): ng.IPromise<any>;
     patch(params: any): ng.IPromise<any>;
     get(params: any): ng.IPromise<any>;

@@ -7,7 +7,6 @@ import {Provider, Inject} from '../decorators';
 export interface IRequestConfig extends ng.IRequestConfig {
     command: string;
     mockup?: boolean;
-    headers?: any;
 }
 
 @Inject('$http', '$window', '$rootScope', '$log', 'config')
@@ -121,15 +120,15 @@ class RestService {
      * @returns {promise}
      */
 
-    request(method: string, params: string | IRequestConfig) {
-        let command: string = typeof params === 'string' ? params.trim() : params.command;
+    request(method: string, params: IRequestConfig | string) {
+        let command: string = typeof params === 'string' ? params : params.command;
         let config: IRequestConfig;
 
         config = {
             method,
             url: this.url + command,
             command,
-            headers: angular.extend(this.headers, params.headers || {}),
+            headers: angular.extend(this.headers, (<IRequestConfig>params).headers || {}),
             params: typeof params === 'string' ? {} : params.params
         };
 

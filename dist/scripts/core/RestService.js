@@ -98,7 +98,7 @@ var RestService = (function () {
      */
     RestService.prototype.request = function (method, params) {
         var _this = this;
-        var command = typeof params === 'string' ? params.trim() : params.command;
+        var command = typeof params === 'string' ? params : params.command;
         var config;
         config = {
             method: method,
