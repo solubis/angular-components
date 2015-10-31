@@ -190,3 +190,4 @@ var OAuthTokenServiceProvider = (function () {
 exports.OAuthTokenServiceProvider = OAuthTokenServiceProvider;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = OAuthTokenService;
+//# sourceMappingURL=OAuthTokenService.js.map

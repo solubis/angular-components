@@ -1,30 +1,52 @@
 var angular = require('angular');
-var providers = {
+var items = {
     services: [],
+    providers: [],
     filters: [],
+    values: [],
     directives: []
 };
-var components = [];
+var modules = [];
 function Service(options) {
     return function decorator(target) {
         options = options ? options : {};
         if (!options.name) {
             throw new Error('@Service() must contain name property!');
         }
-        providers.services.push({ name: options.name, fn: target });
+        items.services.push({ name: options.name, fn: target });
     };
 }
 exports.Service = Service;
+function Provider(options) {
+    return function decorator(target) {
+        options = options ? options : {};
+        if (!options.name) {
+            throw new Error('@Provider() must contain name property!');
+        }
+        items.providers.push({ name: options.name, fn: target });
+    };
+}
+exports.Provider = Provider;
 function Filter(options) {
     return function decorator(target, key, descriptor) {
         options = options ? options : {};
         if (!options.name) {
             throw new Error('@Filter() must contain name property!');
         }
-        providers.filters.push({ name: options.name, fn: descriptor.value });
+        items.filters.push({ name: options.name, fn: descriptor.value });
     };
 }
 exports.Filter = Filter;
+function Value(options) {
+    return function decorator(target, key, descriptor) {
+        options = options ? options : {};
+        if (!options.name) {
+            throw new Error('@Value() must contain name property!');
+        }
+        items.values.push({ name: options.name, fn: descriptor.value });
+    };
+}
+exports.Value = Value;
 function Inject() {
     var dependencies = [];
     for (var _i = 0; _i < arguments.length; _i++) {
@@ -40,11 +62,18 @@ function Inject() {
     };
 }
 exports.Inject = Inject;
+function isModule(target, options) {
+    return options.module ||
+        options.dependencies ||
+        (target.config && typeof target.config === 'function') ||
+        (target.run && typeof target.run === 'function');
+}
 function Component(options) {
     return function decorator(target) {
+        var name = options.name || toCamelCase(options.selector);
         options = options ? options : {};
-        if (!options.selector) {
-            throw new Error('@Component() must contain selector property!');
+        if (!options.selector && !options.name) {
+            throw new Error('@Component() must contain "selector" or "name" property!');
         }
         if (options.templateUrl || options.template) {
             var directive = {
@@ -54,18 +83,20 @@ function Component(options) {
                 controller: target,
                 controllerAs: 'ctrl'
             };
-            var name_1 = toCamelCase(options.selector);
-            providers.directives.push({ name: name_1, fn: function () { return angular.extend(directive, options); } });
+            items.directives.push({ name: name, fn: function () { return angular.extend(directive, options); } });
         }
         target.$options = options;
-        components.push(target);
+        if (isModule(target, options)) {
+            target.$options.name = target.$options.name || name;
+            modules.push(target);
+        }
     };
 }
 exports.Component = Component;
 function Directive(options) {
     return function decorator(target, key, descriptor) {
         var name = toCamelCase(options.selector);
-        providers.directives.push({ name: name, fn: descriptor.value });
+        items.directives.push({ name: name, fn: descriptor.value });
     };
 }
 exports.Directive = Directive;
@@ -73,8 +104,8 @@ function toCamelCase(str) {
     str = str.charAt(0).toLowerCase() + str.substring(1);
     return str.replace(/-([a-z])/ig, function (all, letter) { return letter.toUpperCase(); });
 }
-function defineModuleForTarget(target, dependencies) {
-    var name = toCamelCase(target.$options.selector);
+function defineModule(target, dependencies) {
+    var name = target.$options.name;
     var module = angular.module(name, [].concat(dependencies || []).concat(target.$options.dependencies || []));
     module.run(target.prototype.run || (function () { }));
     module.config(target.prototype.config || (function () { }));
@@ -82,20 +113,26 @@ function defineModuleForTarget(target, dependencies) {
 }
 function bootstrap(component) {
     angular.element(document).ready(function () {
-        var module = defineModuleForTarget(component, ['templates']);
-        for (var _i = 0, _a = providers.directives; _i < _a.length; _i++) {
-            var directive = _a[_i];
+        var dependencies = ['templates'];
+        for (var _i = 0; _i < modules.length; _i++) {
+            var childModule = modules[_i];
+            if (childModule !== component) {
+                var dependency = defineModule(childModule);
+                dependencies.push(dependency.name);
+            }
+        }
+        var module = defineModule(component, dependencies);
+        for (var _a = 0, _b = items.directives; _a < _b.length; _a++) {
+            var directive = _b[_a];
             module.directive(directive.name, directive.fn);
         }
-        for (var _b = 0, _c = providers.services; _b < _c.length; _b++) {
-            var service = _c[_b];
+        for (var _c = 0, _d = items.services; _c < _d.length; _c++) {
+            var service = _d[_c];
             module.service(service.name, service.fn);
         }
-        for (var _d = 0; _d < components.length; _d++) {
-            var target = components[_d];
-            if (target.$options.selector !== component.$options.selector) {
-                defineModuleForTarget(target);
-            }
+        for (var _e = 0, _f = items.providers; _e < _f.length; _e++) {
+            var provider = _f[_e];
+            module.provider(provider.name, provider.fn);
         }
         try {
             angular.module('templates');
@@ -108,3 +145,4 @@ function bootstrap(component) {
     });
 }
 exports.bootstrap = bootstrap;
+//# sourceMappingURL=decorators.js.map

@@ -55,3 +55,4 @@ var TestService = (function () {
     return TestService;
 })();
 decorators_1.bootstrap(TestComponent);
+//# sourceMappingURL=TestComponent.js.map

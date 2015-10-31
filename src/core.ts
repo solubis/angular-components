@@ -1,52 +1,27 @@
 /**
  * Module with services for error handler, local storage settings and small utils
  */
- import * as angular from 'angular';
+import {Component, Inject} from './decorators';
+import {HttpInterceptor} from './core/HttpInterceptor';
 
-import { SettingsServiceProvider, SettingsService } from './core/SettingsService';
-import { RestServiceProvider, RestService } from './core/RestService';
-import ConfigServiceProvider from './core/ConfigService';
-import HttpInterceptor from './core/HttpInterceptor';
-import UtilsService from './core/UtilsService';
-
-export let module = angular.module('core', [])
-
-  .value('$dateFormat', 'DD.MM.YYYY HH:mm:ss')
-
-  .filter('dateFormat', ($utils) => (value) => $utils.formatDate(value))
-
-  .config(function($httpProvider) {
-  $httpProvider.interceptors.push(HttpInterceptor.factory);
+@Component({
+    name: 'coreModule',
+    dependencies: []
 })
+class Core {
 
-  .provider('$rest', RestServiceProvider)
+    @Inject('$httpProvider')
+    config($httpProvider: ng.IHttpProvider) {
+        $httpProvider.interceptors.push(HttpInterceptor.factory);
+    }
+}
 
-/*
- Utility service
- */
+export * from './core/ConfigService';
+export * from './core/HttpInterceptor';
+export * from './core/RestService';
+export * from './core/SettingsService';
+export * from './core/UtilsService';
 
-  .provider('$config', ConfigServiceProvider)
+export {Core};
 
-/*
- Utility service
- */
-
-  .service('$utils', UtilsService)
-
-/*
- Local storage management
- */
-
-  .provider('$settings', SettingsServiceProvider);
-
-export default module;
-
-export {
-UtilsService,
-ConfigServiceProvider,
-RestService,
-RestServiceProvider,
-SettingsService,
-SettingsServiceProvider,
-HttpInterceptor
-};
+export default 'core';

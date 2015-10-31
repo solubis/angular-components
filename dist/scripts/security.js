@@ -1,12 +1,12 @@
 var angular = require('angular');
-var core = require('./core');
+var core_1 = require('./core');
 require('jsrsasign');
 var SecurityService_1 = require('./security/SecurityService');
 var OAuthTokenService_1 = require('./security/OAuthTokenService');
 var OAuthInterceptor_1 = require('./security/OAuthInterceptor');
 var QueryStringService_1 = require('./security/QueryStringService');
 var AuthorizeDirective_1 = require('./security/AuthorizeDirective');
-var module = angular.module('fds.security', [core.module.name])
+var module = angular.module('fds.security', [core_1.default])
     .config(function ($httpProvider, $configProvider, $securityProvider) {
     var config = $configProvider.$get();
     $securityProvider.configure(config);
@@ -26,3 +26,4 @@ var module = angular.module('fds.security', [core.module.name])
     .directive('authorize', AuthorizeDirective_1.default);
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = module;
+//# sourceMappingURL=security.js.map

@@ -1,6 +1,10 @@
 declare var window: any;
 
-/*@ngInject*/
+import {Provider} from '../decorators';
+
+@Provider({
+    name: '$config'
+})
 class ConfigServiceProvider implements ng.IServiceProvider {
 
     private config = {};
@@ -8,7 +12,6 @@ class ConfigServiceProvider implements ng.IServiceProvider {
     constructor() {
         angular.extend(this.config, window.CONFIG);
     }
-
 
     /**
      * Configure.

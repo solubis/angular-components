@@ -1,9 +1,10 @@
-/**
- * REST communication and error handling
- */
+export interface IRequestConfig extends ng.IRequestConfig {
+    command: string;
+    mockup?: boolean;
+    headers?: any;
+}
 declare class RestService {
     private $http;
-    private $q;
     private $window;
     private $rootScope;
     private $log;
@@ -12,15 +13,15 @@ declare class RestService {
     private headers;
     private isOffline;
     private isMockupEnabled;
-    constructor($http: any, $q: any, $window: any, $rootScope: any, $log: any, config: any);
-    init(): any;
+    constructor($http: ng.IHttpService, $window: ng.IWindowService, $rootScope: ng.IRootScopeService, $log: ng.ILogService, config: any);
+    init(): ng.IPromise<void>;
     /**
      * Mockup response - return JSON file from 'data' folder instead server request
      *
      * @param {object} config
      * @returns {promise} - Request promise
      */
-    mockupResponse(config: any): any;
+    mockupResponse(config: IRequestConfig): ng.IPromise<any>;
     /**
      * Adds request header
      *
@@ -35,12 +36,12 @@ declare class RestService {
      * @param config - config {command: 'REST server endpoint command', params, data}
      * @returns {promise}
      */
-    request(method: any, config: any): any;
-    post(params: any): any;
-    patch(params: any): any;
-    get(params: any): any;
-    put(params: any): any;
-    remove(params: any): any;
+    request(method: string, params: string | IRequestConfig): ng.IPromise<any>;
+    post(params: any): ng.IPromise<any>;
+    patch(params: any): ng.IPromise<any>;
+    get(params: any): ng.IPromise<any>;
+    put(params: any): ng.IPromise<any>;
+    remove(params: any): ng.IPromise<any>;
 }
 declare class RestServiceProvider implements ng.IServiceProvider {
     private config;
@@ -49,8 +50,8 @@ declare class RestServiceProvider implements ng.IServiceProvider {
      *
      * @param {object} params - An `object` of params to extend.
      */
-    configure(params: any): RestServiceProvider;
-    $get($http: any, $q: any, $window: any, $rootScope: any, $log: any): RestService;
+    configure(params: any): this;
+    $get($http: any, $window: any, $rootScope: any, $log: any): RestService;
 }
 export default RestService;
 export { RestServiceProvider, RestService };

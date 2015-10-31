@@ -336,3 +336,4 @@ var SecurityServiceProvider = (function () {
 exports.SecurityServiceProvider = SecurityServiceProvider;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = SecurityService;
+//# sourceMappingURL=SecurityService.js.map

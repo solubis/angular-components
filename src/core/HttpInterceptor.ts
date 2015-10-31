@@ -63,3 +63,4 @@ class HttpInterceptor {
 }
 
 export default HttpInterceptor;
+export {HttpInterceptor};

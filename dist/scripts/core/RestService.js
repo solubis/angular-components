@@ -1,15 +1,23 @@
 /**
  * REST communication and error handling
  */
-/*@ngInject*/
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var decorators_1 = require('../decorators');
 var RestService = (function () {
-    function RestService($http, $q, $window, $rootScope, $log, config) {
+    function RestService($http, $window, $rootScope, $log, config) {
         /*
          Internet connection mockup/online notification
          */
         var _this = this;
         this.$http = $http;
-        this.$q = $q;
         this.$window = $window;
         this.$rootScope = $rootScope;
         this.$log = $log;
@@ -27,10 +35,6 @@ var RestService = (function () {
         if ($window.addEventListener) {
             $window.addEventListener('online', updateOnlineStatus);
             $window.addEventListener('offline', updateOnlineStatus);
-        }
-        else {
-            $window.attachEvent('online', updateOnlineStatus);
-            $window.attachEvent('offline', updateOnlineStatus);
         }
         /*
          Configuration
@@ -50,10 +54,10 @@ var RestService = (function () {
     }
     RestService.prototype.init = function () {
         var _this = this;
-        return this.get({ command: 'version' })
+        return this.get('version')
             .then(function (result) {
-            _this.$rootScope.$restVersion = result.version + '.' + result.revision;
-            _this.$log.info('REST', _this.$rootScope.$restVersion, moment(result.date).format('DD.MM.YYYY hh:mm'));
+            _this.$rootScope['$restVersion'] = result.version + '.' + result.revision;
+            _this.$log.info('REST', _this.$rootScope['$restVersion'], moment(result.date).format('DD.MM.YYYY hh:mm'));
         });
     };
     /**
@@ -63,18 +67,16 @@ var RestService = (function () {
      * @returns {promise} - Request promise
      */
     RestService.prototype.mockupResponse = function (config) {
-        var _this = this;
         var request;
         request = this.$http
             .get('data/' + config.command + '.json')
-            .then(function (response) {
-            var content = response.data.content;
-            if (_this.isMockupEnabled && content) {
-                content = content.slice(config.params.number * config.params.size, (config.params.number + 1) * config.params.size);
-                response.data.content = content;
-                response.data.numberOfElements = content.length;
+            .then(function (result) {
+            var data = result.data;
+            var params = result.config.params;
+            if (angular.isArray(data) && params && config.params.number) {
+                data = data.slice(params.number * params.size, (params.number + 1) * params.size);
             }
-            return response.data;
+            return data;
         });
         return request;
     };
@@ -94,39 +96,37 @@ var RestService = (function () {
      * @param config - config {command: 'REST server endpoint command', params, data}
      * @returns {promise}
      */
-    RestService.prototype.request = function (method, config) {
+    RestService.prototype.request = function (method, params) {
         var _this = this;
-        var deferred = this.$q.defer();
+        var command = typeof params === 'string' ? params.trim() : params.command;
+        var config;
+        config = {
+            method: method,
+            url: this.url + command,
+            command: command,
+            headers: angular.extend(this.headers, params.headers || {}),
+            params: typeof params === 'string' ? {} : params.params
+        };
         if (!config.command) {
             throw new Error('REST Error: Command is required for REST call : ' + JSON.stringify(config));
         }
-        config.url = this.url + config.command;
-        config.method = method;
-        config.headers = angular.extend(this.headers, config.headers);
-        config.params = config.params || {};
         if (this.isMockupEnabled || config.mockup) {
             return this.mockupResponse(config);
         }
-        this.$http(config)
-            .success(function (data, status) {
-            _this.$log.debug('RESPONSE ', config.command + ': ', 'status: ' + status + (data.content ? ', ' + (data.content && data.content.length) + ' items' : ''));
-            if (data.result === 'error') {
-                _this.$log.warn('Application error: "' + data.message + '" for: ' + JSON.stringify(config));
-                deferred.reject({
-                    status: status,
-                    message: data
-                });
-                return;
-            }
-            deferred.resolve(data);
+        return this.$http(config)
+            .then(function (response) {
+            var data = response.data;
+            _this.$log.debug(("RESPONSE " + config.command + ", ") +
+                ("status: " + response.status) +
+                ("" + (data.length ? ', ' + (data.length) + ' items' : '')));
+            return data;
         })
-            .error(function (data, status) {
-            deferred.reject({
-                status: status,
-                message: data
-            });
+            .catch(function (response) {
+            return {
+                status: response.status,
+                message: response.data
+            };
         });
-        return deferred.promise;
     };
     RestService.prototype.post = function (params) {
         return this.request('POST', params);
@@ -143,13 +143,17 @@ var RestService = (function () {
     RestService.prototype.remove = function (params) {
         return this.request('DELETE', params);
     };
+    RestService = __decorate([
+        decorators_1.Inject('$http', '$window', '$rootScope', '$log', 'config'), 
+        __metadata('design:paramtypes', [Function, Object, Object, Object, Object])
+    ], RestService);
     return RestService;
 })();
 exports.RestService = RestService;
 var RestServiceProvider = (function () {
     function RestServiceProvider() {
         this.config = {
-            restURL: window.location.origin
+            restURL: window.location.origin + "/api"
         };
     }
     /**
@@ -159,17 +163,29 @@ var RestServiceProvider = (function () {
      */
     RestServiceProvider.prototype.configure = function (params) {
         if (!(params instanceof Object)) {
-            throw new TypeError('Invalid argument: `config` must be an `Object`.');
+            throw new TypeError('Invalid argument: "config" must be an "Object".');
         }
         angular.extend(this.config, params);
         return this;
     };
-    /*@ngInject*/
-    RestServiceProvider.prototype.$get = function ($http, $q, $window, $rootScope, $log) {
-        return new RestService($http, $q, $window, $rootScope, $log, this.config);
+    RestServiceProvider.prototype.$get = function ($http, $window, $rootScope, $log) {
+        return new RestService($http, $window, $rootScope, $log, this.config);
     };
+    __decorate([
+        decorators_1.Inject('$http', '$window', '$rootScope', '$log'), 
+        __metadata('design:type', Function), 
+        __metadata('design:paramtypes', [Object, Object, Object, Object]), 
+        __metadata('design:returntype', void 0)
+    ], RestServiceProvider.prototype, "$get", null);
+    RestServiceProvider = __decorate([
+        decorators_1.Provider({
+            name: '$rest'
+        }), 
+        __metadata('design:paramtypes', [])
+    ], RestServiceProvider);
     return RestServiceProvider;
 })();
 exports.RestServiceProvider = RestServiceProvider;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = RestService;
+//# sourceMappingURL=RestService.js.map

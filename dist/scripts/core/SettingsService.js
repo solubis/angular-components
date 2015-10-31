@@ -71,3 +71,4 @@ var SettingsServiceProvider = (function () {
 exports.SettingsServiceProvider = SettingsServiceProvider;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = SettingsService;
+//# sourceMappingURL=SettingsService.js.map

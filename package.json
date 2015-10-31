@@ -15,7 +15,8 @@
     "bugs": {
         "url": "https://github.com/solubis/components/issues"
     },
-    "main": "index.js",
+    "main": "dist/scripts/index.js",
+    "typings": "dist/scripts/index.d.ts",
     "devDependencies": {
         "angular": "*",
         "babel-core": "^5.8.25",

@@ -11,7 +11,7 @@ const config = {
     /**
     * Other params
     */
-    indexHTML: `src/index.html`,
+    indexHTML: `src/demo/index.html`,
     templatesModuleName: 'templates',
     build: ['typescript'],
 

@@ -11,32 +11,49 @@ var $ = require('gulp-load-plugins')({
     lazy: true
 });
 
-const SERVER_NAME = 'SERVER';
-
 /**
- * The 'server' task start BrowserSync and open the browser.
+ * The 'browserSync' task start BrowserSync and open the browser.
+ *
  */
 gulp.task('server', () => {
-    let server = browserSync.create(SERVER_NAME);
+    let bs = browserSync.create();
     let browser = 'google chrome';
     let files = [
         config.src.watchFiles,
         config.typescript,
         config.systemjs
     ];
-
-    server.init({
-        open: true,
+    let serverConfig = null;
+    let options = {
+        open: false, // Disabled because of bug: https://github.com/BrowserSync/browser-sync/issues/877
         port: 3000,
         directory: true,
-        notify: false,
+        notify: true,
         startPath: config.indexHTML,
         files: files,
-        server: {
-            baseDir: './'
-        },
         browser: browser
-    });
+    };
+
+    try {
+        $.nodemon({
+            script: 'server/server.js',
+            ext: 'js html',
+            env: {
+                'NODE_ENV': 'development'
+            }
+        });
+
+        serverConfig = require('./server/config.json');
+        options.proxy = `${serverConfig.host}:${serverConfig.port}`;
+        $.util.log(`REST Server found at ${serverConfig.host}:${serverConfig.port}. Using browser-sync as proxy`);
+    } catch (e) {
+        $.util.log('No REST Server present. Using browser-sync as server');
+        options.server = {
+            baseDir: './'
+        };
+    }
+
+    bs.init(options);
 });
 
 /**
@@ -133,7 +150,7 @@ gulp.task('tslint', () => {
  */
 gulp.task('typescript', ['tslint'], () => {
     let project = $.typescript.createProject(
-        config.typescript
+        config.tsconfig
     );
 
     let result = gulp.src(config.src.typescripts)
@@ -153,7 +170,7 @@ gulp.task('bundle', ['tslint'], (done) => {
     let builder = new Builder(config.root);
 
     builder
-        .loadConfig(config.systemjs)
+        .loadConfig(config.systemconfig)
         .then(() => {
             return builder.buildStatic(
                 `${config.src.basePath}index.ts`,

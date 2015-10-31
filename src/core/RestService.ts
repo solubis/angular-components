@@ -2,22 +2,29 @@
  * REST communication and error handling
  */
 
-/*@ngInject*/
+import {Provider, Inject} from '../decorators';
+
+export interface IRequestConfig extends ng.IRequestConfig {
+    command: string;
+    mockup?: boolean;
+    headers?: any;
+}
+
+@Inject('$http', '$window', '$rootScope', '$log', 'config')
 class RestService {
 
     public url;
 
     private headers = { 'Content-Type': 'application/json;charset=utf-8' };
-    private isOffline;
-    private isMockupEnabled;
+    private isOffline: boolean;
+    private isMockupEnabled: boolean;
 
     constructor(
-        private $http,
-        private $q,
-        private $window,
-        private $rootScope,
-        private $log,
-        private config) {
+        private $http: ng.IHttpService,
+        private $window: ng.IWindowService,
+        private $rootScope: ng.IRootScopeService,
+        private $log: ng.ILogService,
+        private config: any) {
 
         /*
          Internet connection mockup/online notification
@@ -36,9 +43,6 @@ class RestService {
         if ($window.addEventListener) {
             $window.addEventListener('online', updateOnlineStatus);
             $window.addEventListener('offline', updateOnlineStatus);
-        } else {
-            $window.attachEvent('online', updateOnlineStatus);
-            $window.attachEvent('offline', updateOnlineStatus);
         }
 
         /*
@@ -65,10 +69,10 @@ class RestService {
     }
 
     init() {
-        return this.get({ command: 'version' })
+        return this.get('version')
             .then((result) => {
-                this.$rootScope.$restVersion = result.version + '.' + result.revision;
-                this.$log.info('REST', this.$rootScope.$restVersion, moment(result.date).format('DD.MM.YYYY hh:mm'));
+                this.$rootScope['$restVersion'] = result.version + '.' + result.revision;
+                this.$log.info('REST', this.$rootScope['$restVersion'], moment(result.date).format('DD.MM.YYYY hh:mm'));
             });
     }
 
@@ -79,22 +83,20 @@ class RestService {
      * @returns {promise} - Request promise
      */
 
-    mockupResponse(config) {
-        let request;
+    mockupResponse(config: IRequestConfig) {
+        let request: ng.IPromise<any>;
 
         request = this.$http
             .get('data/' + config.command + '.json')
-            .then((response) => {
-                let content = response.data.content;
+            .then((result) => {
+                let data: any = result.data;
+                let params: any = result.config.params;
 
-                if (this.isMockupEnabled && content) {
-                    content = content.slice(config.params.number * config.params.size, (config.params.number + 1) * config.params.size);
-
-                    response.data.content = content;
-                    response.data.numberOfElements = content.length;
+                if (angular.isArray(data) && params && config.params.number) {
+                    data = data.slice(params.number * params.size, (params.number + 1) * params.size);
                 }
 
-                return response.data;
+                return data;
             });
 
         return request;
@@ -119,49 +121,43 @@ class RestService {
      * @returns {promise}
      */
 
-    request(method, config) {
-        let deferred = this.$q.defer();
+    request(method: string, params: string | IRequestConfig) {
+        let command: string = typeof params === 'string' ? params.trim() : params.command;
+        let config: IRequestConfig;
+
+        config = {
+            method,
+            url: this.url + command,
+            command,
+            headers: angular.extend(this.headers, params.headers || {}),
+            params: typeof params === 'string' ? {} : params.params
+        };
 
         if (!config.command) {
             throw new Error('REST Error: Command is required for REST call : ' + JSON.stringify(config));
         }
 
-        config.url = this.url + config.command;
-        config.method = method;
-        config.headers = angular.extend(this.headers, config.headers);
-        config.params = config.params || {};
-
         if (this.isMockupEnabled || config.mockup) {
             return this.mockupResponse(config);
         }
 
-        this.$http(config)
-            .success((data, status) => {
-                this.$log.debug('RESPONSE ',
-                    config.command + ': ',
-                    'status: ' + status + (data.content ? ', ' + (data.content && data.content.length) + ' items' : ''));
+        return this.$http(config)
+            .then((response: ng.IHttpPromiseCallbackArg<any>) => {
+                let data: any = response.data;
 
-                if (data.result === 'error') {
-                    this.$log.warn('Application error: "' + data.message + '" for: ' + JSON.stringify(config));
+                this.$log.debug(
+                    `RESPONSE ${config.command}, ` +
+                    `status: ${response.status}` +
+                    `${(data.length ? ', ' + (data.length) + ' items' : '')}`);
 
-                    deferred.reject({
-                        status: status,
-                        message: data
-                    });
-
-                    return;
-                }
-
-                deferred.resolve(data);
+                return data;
             })
-            .error((data, status) => {
-                deferred.reject({
-                    status: status,
-                    message: data
-                });
+            .catch((response: ng.IHttpPromiseCallbackArg<any>) => {
+                return {
+                    status: response.status,
+                    message: response.data
+                };
             });
-
-        return deferred.promise;
     }
 
     post(params) {
@@ -185,10 +181,13 @@ class RestService {
     }
 }
 
+@Provider({
+    name: '$rest'
+})
 class RestServiceProvider implements ng.IServiceProvider {
 
     private config = {
-        restURL: window.location.origin
+        restURL: `${window.location.origin}/api`
     };
 
     /**
@@ -199,7 +198,7 @@ class RestServiceProvider implements ng.IServiceProvider {
 
     configure(params) {
         if (!(params instanceof Object)) {
-            throw new TypeError('Invalid argument: `config` must be an `Object`.');
+            throw new TypeError('Invalid argument: "config" must be an "Object".');
         }
 
         angular.extend(this.config, params);
@@ -207,9 +206,9 @@ class RestServiceProvider implements ng.IServiceProvider {
         return this;
     }
 
-    /*@ngInject*/
-    $get($http, $q, $window, $rootScope, $log) {
-        return new RestService($http, $q, $window, $rootScope, $log, this.config);
+    @Inject('$http', '$window', '$rootScope', '$log')
+    $get($http, $window, $rootScope, $log) {
+        return new RestService($http, $window, $rootScope, $log, this.config);
     }
 }
 

@@ -1,12 +1,14 @@
 import * as angular from 'angular';
 
-let providers = {
+let items = {
     services: [],
+    providers: [],
     filters: [],
+    values: [],
     directives: []
 };
 
-let components = [];
+let modules = [];
 
 function Service(options) {
     return function decorator(target) {
@@ -14,7 +16,17 @@ function Service(options) {
         if (!options.name) {
             throw new Error('@Service() must contain name property!');
         }
-        providers.services.push({ name: options.name, fn: target });
+        items.services.push({ name: options.name, fn: target });
+    };
+}
+
+function Provider(options) {
+    return function decorator(target) {
+        options = options ? options : {};
+        if (!options.name) {
+            throw new Error('@Provider() must contain name property!');
+        }
+        items.providers.push({ name: options.name, fn: target });
     };
 }
 
@@ -24,7 +36,17 @@ function Filter(options) {
         if (!options.name) {
             throw new Error('@Filter() must contain name property!');
         }
-        providers.filters.push({ name: options.name, fn: descriptor.value });
+        items.filters.push({ name: options.name, fn: descriptor.value });
+    };
+}
+
+function Value(options) {
+    return function decorator(target, key, descriptor) {
+        options = options ? options : {};
+        if (!options.name) {
+            throw new Error('@Value() must contain name property!');
+        }
+        items.values.push({ name: options.name, fn: descriptor.value });
     };
 }
 
@@ -38,12 +60,21 @@ function Inject(...dependencies) {
     };
 }
 
+function isModule(target, options) {
+    return options.module ||
+        options.dependencies ||
+        (target.config && typeof target.config === 'function') ||
+        (target.run && typeof target.run === 'function');
+}
+
 function Component(options) {
     return function decorator(target) {
+        let name = options.name || toCamelCase(options.selector);
+
         options = options ? options : {};
 
-        if (!options.selector) {
-            throw new Error('@Component() must contain selector property!');
+        if (!options.selector && !options.name) {
+            throw new Error('@Component() must contain "selector" or "name" property!');
         }
 
         if (options.templateUrl || options.template) {
@@ -55,21 +86,22 @@ function Component(options) {
                 controllerAs: 'ctrl'
             };
 
-            let name = toCamelCase(options.selector);
-
-            providers.directives.push({ name, fn: () => angular.extend(directive, options) });
+            items.directives.push({ name, fn: () => angular.extend(directive, options) });
         }
 
         target.$options = options;
 
-        components.push(target);
+        if (isModule(target, options)) {
+            target.$options.name = target.$options.name || name;
+            modules.push(target);
+        }
     };
 }
 
 function Directive(options) {
     return function decorator(target, key, descriptor) {
         let name = toCamelCase(options.selector);
-        providers.directives.push({ name, fn: descriptor.value });
+        items.directives.push({ name, fn: descriptor.value });
     };
 }
 
@@ -78,8 +110,8 @@ function toCamelCase(str: string) {
     return str.replace(/-([a-z])/ig, (all, letter) => letter.toUpperCase());
 }
 
-function defineModuleForTarget(target: any, dependencies?: string[]) {
-    let name = toCamelCase(target.$options.selector);
+function defineModule(target: any, dependencies?: string[]): ng.IModule {
+    let name = target.$options.name;
     let module = angular.module(name, [].concat(dependencies || []).concat(target.$options.dependencies || []));
 
     module.run(target.prototype.run || (() => { }));
@@ -90,20 +122,27 @@ function defineModuleForTarget(target: any, dependencies?: string[]) {
 
 function bootstrap(component) {
     angular.element(document).ready(() => {
-        let module = defineModuleForTarget(component, ['templates']);
+        let dependencies = ['templates'];
 
-        for (let directive of providers.directives) {
+        for (let childModule of modules) {
+            if (childModule !== component) {
+                let dependency = defineModule(childModule);
+                dependencies.push(dependency.name);
+            }
+        }
+
+        let module = defineModule(component, dependencies);
+
+        for (let directive of items.directives) {
             module.directive(directive.name, directive.fn);
         }
 
-        for (let service of providers.services) {
+        for (let service of items.services) {
             module.service(service.name, service.fn);
         }
 
-        for (let target of components) {
-            if (target.$options.selector !== component.$options.selector) {
-                defineModuleForTarget(target);
-            }
+        for (let provider of items.providers) {
+            module.provider(provider.name, provider.fn);
         }
 
         try {
@@ -118,4 +157,4 @@ function bootstrap(component) {
     });
 }
 
-export {Component, Inject, Service, Filter, Directive, bootstrap};
+export {Component, Inject, Service, Provider, Filter, Directive, Value, bootstrap};

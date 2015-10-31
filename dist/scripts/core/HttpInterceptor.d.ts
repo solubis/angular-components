@@ -8,3 +8,4 @@ declare class HttpInterceptor {
     constructor($rootScope: ng.IRootScopeService, $q: ng.IQService, $log: ng.ILogService);
 }
 export default HttpInterceptor;
+export { HttpInterceptor };

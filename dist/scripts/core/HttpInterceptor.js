@@ -52,5 +52,7 @@ var HttpInterceptor = (function () {
     };
     return HttpInterceptor;
 })();
+exports.HttpInterceptor = HttpInterceptor;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = HttpInterceptor;
+//# sourceMappingURL=HttpInterceptor.js.map
