@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 var decorators_1 = require('../decorators');
+var moment = require('moment');
 var RestService = (function () {
     function RestService($http, $window, $rootScope, $log, config) {
         /*
@@ -56,8 +57,11 @@ var RestService = (function () {
         var _this = this;
         return this.get('version')
             .then(function (result) {
-            _this.$rootScope['$restVersion'] = result.version + '.' + result.revision;
-            _this.$log.info('REST', _this.$rootScope['$restVersion'], moment(result.date).format('DD.MM.YYYY hh:mm'));
+            var server = result[0];
+            if (server) {
+                _this.version = server.version + " - " + moment(server.date).format('DD.MM.YYYY hh:mm');
+                _this.$log.info('REST', _this.version);
+            }
         });
     };
     /**

@@ -14,6 +14,11 @@ class Core {
     config($httpProvider: ng.IHttpProvider) {
         $httpProvider.interceptors.push(HttpInterceptor.factory);
     }
+
+    @Inject('$rest')
+    run($rest) {
+        $rest.init();
+    }
 }
 
 export * from './core/ConfigService';

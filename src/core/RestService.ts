@@ -3,6 +3,7 @@
  */
 
 import {Provider, Inject} from '../decorators';
+import * as moment from 'moment';
 
 export interface IRequestConfig extends ng.IRequestConfig {
     command: string;
@@ -17,6 +18,7 @@ class RestService {
     private headers = { 'Content-Type': 'application/json;charset=utf-8' };
     private isOffline: boolean;
     private isMockupEnabled: boolean;
+    private version: string;
 
     constructor(
         private $http: ng.IHttpService,
@@ -70,8 +72,11 @@ class RestService {
     init() {
         return this.get('version')
             .then((result) => {
-                this.$rootScope['$restVersion'] = result.version + '.' + result.revision;
-                this.$log.info('REST', this.$rootScope['$restVersion'], moment(result.date).format('DD.MM.YYYY hh:mm'));
+                let server = result[0];
+                if (server) {
+                    this.version = `${server.version} - ${moment(server.date).format('DD.MM.YYYY hh:mm')}`;
+                    this.$log.info('REST', this.version);
+                }
             });
     }
 

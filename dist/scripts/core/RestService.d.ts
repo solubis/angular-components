@@ -12,6 +12,7 @@ declare class RestService {
     private headers;
     private isOffline;
     private isMockupEnabled;
+    private version;
     constructor($http: ng.IHttpService, $window: ng.IWindowService, $rootScope: ng.IRootScopeService, $log: ng.ILogService, config: any);
     init(): ng.IPromise<void>;
     /**

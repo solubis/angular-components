@@ -21,12 +21,21 @@ var Core = (function () {
     Core.prototype.config = function ($httpProvider) {
         $httpProvider.interceptors.push(HttpInterceptor_1.HttpInterceptor.factory);
     };
+    Core.prototype.run = function ($rest) {
+        $rest.init();
+    };
     __decorate([
         decorators_1.Inject('$httpProvider'), 
         __metadata('design:type', Function), 
         __metadata('design:paramtypes', [Object]), 
         __metadata('design:returntype', void 0)
     ], Core.prototype, "config", null);
+    __decorate([
+        decorators_1.Inject('$rest'), 
+        __metadata('design:type', Function), 
+        __metadata('design:paramtypes', [Object]), 
+        __metadata('design:returntype', void 0)
+    ], Core.prototype, "run", null);
     Core = __decorate([
         decorators_1.Component({
             name: 'coreModule',
