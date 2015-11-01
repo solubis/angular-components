@@ -56,8 +56,8 @@ var RestService = (function () {
     RestService.prototype.init = function () {
         var _this = this;
         return this.get('version')
-            .then(function (result) {
-            var server = result[0];
+            .then(function (response) {
+            var server = response[0];
             if (server) {
                 _this.version = server.version + " - " + moment(server.date).format('DD.MM.YYYY hh:mm');
                 _this.$log.info('REST', _this.version);
@@ -73,7 +73,7 @@ var RestService = (function () {
     RestService.prototype.mockupResponse = function (config) {
         var request;
         request = this.$http
-            .get('data/' + config.command + '.json')
+            .get("data/" + config.command + ".json")
             .then(function (result) {
             var data = result.data;
             var params = result.config.params;
@@ -97,7 +97,7 @@ var RestService = (function () {
      * Executes HTTP request
      *
      * @param method - HTTP method e.g. PUT, POST etc.
-     * @param config - config {command: 'REST server endpoint command', params, data}
+     * @param params - config {command: 'REST server endpoint command', params, data} or command: string
      * @returns {promise}
      */
     RestService.prototype.request = function (method, params) {
@@ -124,12 +124,6 @@ var RestService = (function () {
                 ("status: " + response.status) +
                 ("" + (data.length ? ', ' + (data.length) + ' items' : '')));
             return data;
-        })
-            .catch(function (response) {
-            return {
-                status: response.status,
-                message: response.data
-            };
         });
     };
     RestService.prototype.post = function (params) {
@@ -179,7 +173,7 @@ var RestServiceProvider = (function () {
         decorators_1.Inject('$http', '$window', '$rootScope', '$log'), 
         __metadata('design:type', Function), 
         __metadata('design:paramtypes', [Object, Object, Object, Object]), 
-        __metadata('design:returntype', void 0)
+        __metadata('design:returntype', RestService)
     ], RestServiceProvider.prototype, "$get", null);
     RestServiceProvider = __decorate([
         decorators_1.Provider({

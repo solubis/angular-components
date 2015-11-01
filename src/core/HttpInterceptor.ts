@@ -2,6 +2,8 @@
  * HTTP Interceptor for global error handling
  */
 
+import {Inject} from '../decorators';
+
 function replacer(key, value) {
     if (typeof value === 'string' && value.length > 35) {
         return value.substring(0, 34) + '...';
@@ -9,7 +11,6 @@ function replacer(key, value) {
     return value;
 }
 
-/*@ngInject*/
 class HttpInterceptor {
 
     request = (config) => {
@@ -25,38 +26,38 @@ class HttpInterceptor {
     };
 
     responseError = (rejection) => {
+        let data = rejection.data;
 
         this.$log.error('HTTP Response Error, status: ' + rejection.status + ' message: ' + JSON.stringify(rejection.data, replacer));
-
-        rejection.message = rejection.data && rejection.data.error_description ? rejection.data.error_description : 'Unknown server error';
-        rejection.url = rejection.config.url;
 
         switch (rejection.status) {
             case 0:
             case 500:
             case 502:
             case 503:
-                this.$rootScope.$broadcast('$rest:error:communication', rejection);
+                this.$rootScope.$broadcast('$rest:error:communication', data.error);
                 break;
             case 400:
+            case 404:
             case 405:
-                this.$rootScope.$broadcast('$rest:error:request', rejection);
+                this.$rootScope.$broadcast('$rest:error:request', data.error);
                 break;
             case 401:
             case 403:
-                this.$rootScope.$broadcast('$rest:error:authorization', rejection);
+                this.$rootScope.$broadcast('$rest:error:authorization', data.error);
                 break;
         }
 
         return this.$q.reject(rejection);
     };
 
-    /*@ngInject*/
+    @Inject('$rootScope', '$q', '$log')
     public static factory($rootScope: ng.IRootScopeService, $q: ng.IQService, $log: ng.ILogService) {
         return new HttpInterceptor($rootScope, $q, $log);
     }
 
-    constructor(private $rootScope: ng.IRootScopeService,
+    constructor(
+        private $rootScope: ng.IRootScopeService,
         private $q: ng.IQService,
         private $log: ng.ILogService) {
     }

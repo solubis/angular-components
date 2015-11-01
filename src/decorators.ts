@@ -8,74 +8,97 @@ let items = {
     directives: []
 };
 
-let modules = [];
+let modules: IComponent[] = [];
 
-function Service(options) {
-    return function decorator(target) {
-        options = options ? options : {};
-        if (!options.name) {
+export interface IBasicDecoratorOptions {
+    name: string;
+}
+
+export interface IComponentDecoratorOptions {
+    selector?: string;
+    name?: string;
+    templateUrl?: string;
+    template?: string;
+    module?: boolean;
+    dependencies?: string[];
+}
+
+export interface IModuleDecoratorOptions {
+    selector?: string;
+    name?: string;
+    module?: boolean;
+    dependencies?: string[];
+}
+
+export interface IComponent extends Function {
+    $options: IComponentDecoratorOptions;
+}
+
+function Service(options: IBasicDecoratorOptions): ClassDecorator {
+    let decorator: ClassDecorator;
+
+    decorator = (target: IComponent) => {
+        if (!options || !options.name) {
             throw new Error('@Service() must contain name property!');
         }
         items.services.push({ name: options.name, fn: target });
+
+        checkModule(target, options);
     };
+
+    return decorator;
 }
 
-function Provider(options) {
-    return function decorator(target) {
-        options = options ? options : {};
-        if (!options.name) {
+function Provider(options: IBasicDecoratorOptions) {
+    let decorator: ClassDecorator;
+
+    decorator = (target) => {
+        if (!options || !options.name) {
             throw new Error('@Provider() must contain name property!');
         }
         items.providers.push({ name: options.name, fn: target });
+
+        checkModule(target, options);
     };
+
+    return decorator;
 }
 
-function Filter(options) {
-    return function decorator(target, key, descriptor) {
-        options = options ? options : {};
-        if (!options.name) {
+function Filter(options: IBasicDecoratorOptions): PropertyDecorator {
+    let decorator: PropertyDecorator;
+
+    decorator = (target: Function, key?: string, descriptor?: TypedPropertyDescriptor<any>) => {
+        if (options || !options.name) {
             throw new Error('@Filter() must contain name property!');
         }
         items.filters.push({ name: options.name, fn: descriptor.value });
     };
+
+    return decorator;
 }
 
-function Value(options) {
-    return function decorator(target, key, descriptor) {
-        options = options ? options : {};
-        if (!options.name) {
+function Value(options: IBasicDecoratorOptions): PropertyDecorator {
+    let decorator: PropertyDecorator;
+
+    decorator = (target: Function, key?: string, descriptor?: TypedPropertyDescriptor<any>) => {
+        if (!options || !options.name) {
             throw new Error('@Value() must contain name property!');
         }
         items.values.push({ name: options.name, fn: descriptor.value });
     };
+
+    return decorator;
 }
 
-function Inject(...dependencies) {
-    return function decorator(target, key?, descriptor?) {
-        if (descriptor) {
-            descriptor.value.$inject = dependencies;
-        } else {
-            target.$inject = dependencies;
-        }
-    };
-}
+function Component(options: IComponentDecoratorOptions): ClassDecorator {
+    let decorator: ClassDecorator;
 
-function isModule(target, options) {
-    return options.module ||
-        options.dependencies ||
-        (target.config && typeof target.config === 'function') ||
-        (target.run && typeof target.run === 'function');
-}
-
-function Component(options) {
-    return function decorator(target) {
-        let name = options.name || toCamelCase(options.selector);
-
-        options = options ? options : {};
-
+    decorator = (target: IComponent) => {
         if (!options.selector && !options.name) {
             throw new Error('@Component() must contain "selector" or "name" property!');
         }
+
+        options.name = options.name || toCamelCase(options.selector);
 
         if (options.templateUrl || options.template) {
             let directive = {
@@ -86,23 +109,39 @@ function Component(options) {
                 controllerAs: 'ctrl'
             };
 
-            items.directives.push({ name, fn: () => angular.extend(directive, options) });
+            items.directives.push({ name: options.name, fn: () => angular.extend(directive, options) });
         }
 
-        target.$options = options;
-
-        if (isModule(target, options)) {
-            target.$options.name = target.$options.name || name;
-            modules.push(target);
-        }
+        checkModule(target, options);
     };
+
+    return decorator;
 }
 
-function Directive(options) {
-    return function decorator(target, key, descriptor) {
-        let name = toCamelCase(options.selector);
+function Directive(options: IComponentDecoratorOptions): ClassDecorator {
+    let decorator: ClassDecorator;
+
+    decorator = (target: Function, key?: string, descriptor?: TypedPropertyDescriptor<any>) => {
+        let name: string = toCamelCase(options.selector);
+
         items.directives.push({ name, fn: descriptor.value });
     };
+
+    return decorator;
+}
+
+function Inject(...dependencies: string[]) {
+    let decorator;
+
+    decorator = (target: Function, key?: string, descriptor?: TypedPropertyDescriptor<any>) => {
+        if (descriptor) {
+            descriptor.value.$inject = dependencies;
+        } else {
+            target.$inject = dependencies;
+        }
+    };
+
+    return decorator;
 }
 
 function toCamelCase(str: string) {
@@ -110,7 +149,22 @@ function toCamelCase(str: string) {
     return str.replace(/-([a-z])/ig, (all, letter) => letter.toUpperCase());
 }
 
-function defineModule(target: any, dependencies?: string[]): ng.IModule {
+function checkModule(target: IComponent, options: IModuleDecoratorOptions): void {
+    if (isModule(target, options)) {
+        target.$options = options;
+        target.$options.name = target.$options.name || name;
+        modules.push(target);
+    }
+}
+
+function isModule(target: Function, options: IModuleDecoratorOptions): boolean {
+    return <boolean>(options.module ||
+        options.dependencies ||
+        (target.prototype.config && typeof target.prototype.config === 'function') ||
+        (target.prototype.run && typeof target.prototype.run === 'function'));
+}
+
+function defineModule(target: IComponent, dependencies?: string[]): ng.IModule {
     let name = target.$options.name;
     let module = angular.module(name, [].concat(dependencies || []).concat(target.$options.dependencies || []));
 
@@ -120,9 +174,10 @@ function defineModule(target: any, dependencies?: string[]): ng.IModule {
     return module;
 }
 
-function bootstrap(component) {
+function bootstrap(component: Function) {
+
     angular.element(document).ready(() => {
-        let dependencies = ['templates'];
+        let dependencies: string[] = ['templates'];
 
         for (let childModule of modules) {
             if (childModule !== component) {
@@ -131,7 +186,7 @@ function bootstrap(component) {
             }
         }
 
-        let module = defineModule(component, dependencies);
+        let module = defineModule(<IComponent>component, dependencies);
 
         for (let directive of items.directives) {
             module.directive(directive.name, directive.fn);
@@ -151,7 +206,7 @@ function bootstrap(component) {
             angular.module('templates', []);
         }
 
-        let selector = document.querySelector(component.$options.selector);
+        let selector = document.querySelector((<IComponent>component).$options.selector);
 
         angular.bootstrap(selector, [module.name], {});
     });

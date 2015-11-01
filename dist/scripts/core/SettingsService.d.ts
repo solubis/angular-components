@@ -23,7 +23,7 @@ declare class SettingsServiceProvider implements ng.IServiceProvider {
      *
      * @param {object} params - An `object` of params to extend.
      */
-    configure(params: any): SettingsServiceProvider;
+    configure(params: any): this;
     $get($window: any): SettingsService;
 }
 export default SettingsService;

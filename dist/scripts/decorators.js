@@ -8,73 +8,58 @@ var items = {
 };
 var modules = [];
 function Service(options) {
-    return function decorator(target) {
-        options = options ? options : {};
-        if (!options.name) {
+    var decorator;
+    decorator = function (target) {
+        if (!options || !options.name) {
             throw new Error('@Service() must contain name property!');
         }
         items.services.push({ name: options.name, fn: target });
+        checkModule(target, options);
     };
+    return decorator;
 }
 exports.Service = Service;
 function Provider(options) {
-    return function decorator(target) {
-        options = options ? options : {};
-        if (!options.name) {
+    var decorator;
+    decorator = function (target) {
+        if (!options || !options.name) {
             throw new Error('@Provider() must contain name property!');
         }
         items.providers.push({ name: options.name, fn: target });
+        checkModule(target, options);
     };
+    return decorator;
 }
 exports.Provider = Provider;
 function Filter(options) {
-    return function decorator(target, key, descriptor) {
-        options = options ? options : {};
-        if (!options.name) {
+    var decorator;
+    decorator = function (target, key, descriptor) {
+        if (options || !options.name) {
             throw new Error('@Filter() must contain name property!');
         }
         items.filters.push({ name: options.name, fn: descriptor.value });
     };
+    return decorator;
 }
 exports.Filter = Filter;
 function Value(options) {
-    return function decorator(target, key, descriptor) {
-        options = options ? options : {};
-        if (!options.name) {
+    var decorator;
+    decorator = function (target, key, descriptor) {
+        if (!options || !options.name) {
             throw new Error('@Value() must contain name property!');
         }
         items.values.push({ name: options.name, fn: descriptor.value });
     };
+    return decorator;
 }
 exports.Value = Value;
-function Inject() {
-    var dependencies = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        dependencies[_i - 0] = arguments[_i];
-    }
-    return function decorator(target, key, descriptor) {
-        if (descriptor) {
-            descriptor.value.$inject = dependencies;
-        }
-        else {
-            target.$inject = dependencies;
-        }
-    };
-}
-exports.Inject = Inject;
-function isModule(target, options) {
-    return options.module ||
-        options.dependencies ||
-        (target.config && typeof target.config === 'function') ||
-        (target.run && typeof target.run === 'function');
-}
 function Component(options) {
-    return function decorator(target) {
-        var name = options.name || toCamelCase(options.selector);
-        options = options ? options : {};
+    var decorator;
+    decorator = function (target) {
         if (!options.selector && !options.name) {
             throw new Error('@Component() must contain "selector" or "name" property!');
         }
+        options.name = options.name || toCamelCase(options.selector);
         if (options.templateUrl || options.template) {
             var directive = {
                 restrict: 'E',
@@ -83,26 +68,55 @@ function Component(options) {
                 controller: target,
                 controllerAs: 'ctrl'
             };
-            items.directives.push({ name: name, fn: function () { return angular.extend(directive, options); } });
+            items.directives.push({ name: options.name, fn: function () { return angular.extend(directive, options); } });
         }
-        target.$options = options;
-        if (isModule(target, options)) {
-            target.$options.name = target.$options.name || name;
-            modules.push(target);
-        }
+        checkModule(target, options);
     };
+    return decorator;
 }
 exports.Component = Component;
 function Directive(options) {
-    return function decorator(target, key, descriptor) {
+    var decorator;
+    decorator = function (target, key, descriptor) {
         var name = toCamelCase(options.selector);
         items.directives.push({ name: name, fn: descriptor.value });
     };
+    return decorator;
 }
 exports.Directive = Directive;
+function Inject() {
+    var dependencies = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        dependencies[_i - 0] = arguments[_i];
+    }
+    var decorator;
+    decorator = function (target, key, descriptor) {
+        if (descriptor) {
+            descriptor.value.$inject = dependencies;
+        }
+        else {
+            target.$inject = dependencies;
+        }
+    };
+    return decorator;
+}
+exports.Inject = Inject;
 function toCamelCase(str) {
     str = str.charAt(0).toLowerCase() + str.substring(1);
     return str.replace(/-([a-z])/ig, function (all, letter) { return letter.toUpperCase(); });
+}
+function checkModule(target, options) {
+    if (isModule(target, options)) {
+        target.$options = options;
+        target.$options.name = target.$options.name || name;
+        modules.push(target);
+    }
+}
+function isModule(target, options) {
+    return (options.module ||
+        options.dependencies ||
+        (target.prototype.config && typeof target.prototype.config === 'function') ||
+        (target.prototype.run && typeof target.prototype.run === 'function'));
 }
 function defineModule(target, dependencies) {
     var name = target.$options.name;

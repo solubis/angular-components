@@ -28,20 +28,20 @@ declare class RestService {
      * @param name
      * @param value
      */
-    putHeader(name: any, value: any): void;
+    putHeader(name: string, value: string): void;
     /**
      * Executes HTTP request
      *
      * @param method - HTTP method e.g. PUT, POST etc.
-     * @param config - config {command: 'REST server endpoint command', params, data}
+     * @param params - config {command: 'REST server endpoint command', params, data} or command: string
      * @returns {promise}
      */
     request(method: string, params: IRequestConfig | string): ng.IPromise<any>;
-    post(params: any): ng.IPromise<any>;
-    patch(params: any): ng.IPromise<any>;
-    get(params: any): ng.IPromise<any>;
-    put(params: any): ng.IPromise<any>;
-    remove(params: any): ng.IPromise<any>;
+    post(params: IRequestConfig | string): ng.IPromise<any>;
+    patch(params: IRequestConfig | string): ng.IPromise<any>;
+    get(params: IRequestConfig | string): ng.IPromise<any>;
+    put(params: IRequestConfig | string): ng.IPromise<any>;
+    remove(params: IRequestConfig | string): ng.IPromise<any>;
 }
 declare class RestServiceProvider implements ng.IServiceProvider {
     private config;
@@ -50,7 +50,7 @@ declare class RestServiceProvider implements ng.IServiceProvider {
      *
      * @param {object} params - An `object` of params to extend.
      */
-    configure(params: any): this;
+    configure(params: Object): this;
     $get($http: any, $window: any, $rootScope: any, $log: any): RestService;
 }
 export default RestService;

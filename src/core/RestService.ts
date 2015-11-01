@@ -71,8 +71,8 @@ class RestService {
 
     init() {
         return this.get('version')
-            .then((result) => {
-                let server = result[0];
+            .then((response: ng.IHttpPromiseCallbackArg<any[]>) => {
+                let server = response[0];
                 if (server) {
                     this.version = `${server.version} - ${moment(server.date).format('DD.MM.YYYY hh:mm')}`;
                     this.$log.info('REST', this.version);
@@ -91,7 +91,7 @@ class RestService {
         let request: ng.IPromise<any>;
 
         request = this.$http
-            .get('data/' + config.command + '.json')
+            .get(`data/${config.command}.json`)
             .then((result) => {
                 let data: any = result.data;
                 let params: any = result.config.params;
@@ -113,7 +113,7 @@ class RestService {
      * @param value
      */
 
-    putHeader(name, value) {
+    putHeader(name: string, value: string) {
         this.headers[name] = value;
     }
 
@@ -121,11 +121,11 @@ class RestService {
      * Executes HTTP request
      *
      * @param method - HTTP method e.g. PUT, POST etc.
-     * @param config - config {command: 'REST server endpoint command', params, data}
+     * @param params - config {command: 'REST server endpoint command', params, data} or command: string
      * @returns {promise}
      */
 
-    request(method: string, params: IRequestConfig | string) {
+    request(method: string, params: IRequestConfig | string): ng.IPromise<any> {
         let command: string = typeof params === 'string' ? params : params.command;
         let config: IRequestConfig;
 
@@ -155,32 +155,26 @@ class RestService {
                     `${(data.length ? ', ' + (data.length) + ' items' : '')}`);
 
                 return data;
-            })
-            .catch((response: ng.IHttpPromiseCallbackArg<any>) => {
-                return {
-                    status: response.status,
-                    message: response.data
-                };
             });
     }
 
-    post(params) {
+    post(params: IRequestConfig | string) {
         return this.request('POST', params);
     }
 
-    patch(params) {
+    patch(params: IRequestConfig | string) {
         return this.request('PATCH', params);
     }
 
-    get(params) {
+    get(params: IRequestConfig | string) {
         return this.request('GET', params);
     }
 
-    put(params) {
+    put(params: IRequestConfig | string) {
         return this.request('PUT', params);
     }
 
-    remove(params) {
+    remove(params: IRequestConfig | string) {
         return this.request('DELETE', params);
     }
 }
@@ -200,7 +194,7 @@ class RestServiceProvider implements ng.IServiceProvider {
      * @param {object} params - An `object` of params to extend.
      */
 
-    configure(params) {
+    configure(params: Object) {
         if (!(params instanceof Object)) {
             throw new TypeError('Invalid argument: "config" must be an "Object".');
         }
@@ -211,7 +205,7 @@ class RestServiceProvider implements ng.IServiceProvider {
     }
 
     @Inject('$http', '$window', '$rootScope', '$log')
-    $get($http, $window, $rootScope, $log) {
+    $get($http, $window, $rootScope, $log): RestService {
         return new RestService($http, $window, $rootScope, $log, this.config);
     }
 }
