@@ -8,7 +8,6 @@ target
 /src/modules/**/*.js
 /src/app.js
 /src/lib
-*.map
 *.tgz
 *.css
 
