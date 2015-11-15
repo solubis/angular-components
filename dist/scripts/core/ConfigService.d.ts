@@ -6,7 +6,7 @@ declare class ConfigServiceProvider implements ng.IServiceProvider {
      *
      * @param {object} params - An `object` of params to extend.
      */
-    configure(params: any): this;
+    configure(params: any): ConfigServiceProvider;
     $get(): {};
 }
 export { ConfigServiceProvider };

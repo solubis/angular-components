@@ -20,14 +20,14 @@ export interface IComponentDecoratorOptions {
     templateUrl?: string;
     template?: string;
     module?: boolean;
-    dependencies?: string[];
+    providers?: string[];
 }
 
 export interface IModuleDecoratorOptions {
     selector?: string;
     name?: string;
     module?: boolean;
-    dependencies?: string[];
+    providers?: string[];
 }
 
 export interface IComponent extends Function {
@@ -118,7 +118,7 @@ function Component(options: IComponentDecoratorOptions): ClassDecorator {
     return decorator;
 }
 
-function Directive(options: IComponentDecoratorOptions): ClassDecorator {
+function Directive(options: IComponentDecoratorOptions): PropertyDecorator {
     let decorator: ClassDecorator;
 
     decorator = (target: Function, key?: string, descriptor?: TypedPropertyDescriptor<any>) => {
@@ -159,14 +159,14 @@ function checkModule(target: IComponent, options: IModuleDecoratorOptions): void
 
 function isModule(target: Function, options: IModuleDecoratorOptions): boolean {
     return <boolean>(options.module ||
-        options.dependencies ||
+        options.providers ||
         (target.prototype.config && typeof target.prototype.config === 'function') ||
         (target.prototype.run && typeof target.prototype.run === 'function'));
 }
 
 function defineModule(target: IComponent, dependencies?: string[]): ng.IModule {
     let name = target.$options.name;
-    let module = angular.module(name, [].concat(dependencies || []).concat(target.$options.dependencies || []));
+    let module = angular.module(name, [].concat(dependencies || []).concat(target.$options.providers || []));
 
     module.run(target.prototype.run || (() => { }));
     module.config(target.prototype.config || (() => { }));

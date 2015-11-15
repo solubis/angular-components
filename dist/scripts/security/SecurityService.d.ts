@@ -128,7 +128,7 @@ export declare class SecurityServiceProvider implements ng.IServiceProvider {
      *
      * @param {object} params - An `object` of params to extend.
      */
-    configure(params: any): this;
+    configure(params: any): SecurityServiceProvider;
     $get($http: any, $window: any, $location: any, $timeout: any, $queryString: any, $oauthToken: any, Organisation: any): SecurityService;
 }
 export default SecurityService;

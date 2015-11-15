@@ -114,13 +114,13 @@ function checkModule(target, options) {
 }
 function isModule(target, options) {
     return (options.module ||
-        options.dependencies ||
+        options.providers ||
         (target.prototype.config && typeof target.prototype.config === 'function') ||
         (target.prototype.run && typeof target.prototype.run === 'function'));
 }
 function defineModule(target, dependencies) {
     var name = target.$options.name;
-    var module = angular.module(name, [].concat(dependencies || []).concat(target.$options.dependencies || []));
+    var module = angular.module(name, [].concat(dependencies || []).concat(target.$options.providers || []));
     module.run(target.prototype.run || (function () { }));
     module.config(target.prototype.config || (function () { }));
     return module;
@@ -128,8 +128,8 @@ function defineModule(target, dependencies) {
 function bootstrap(component) {
     angular.element(document).ready(function () {
         var dependencies = ['templates'];
-        for (var _i = 0; _i < modules.length; _i++) {
-            var childModule = modules[_i];
+        for (var _i = 0, modules_1 = modules; _i < modules_1.length; _i++) {
+            var childModule = modules_1[_i];
             if (childModule !== component) {
                 var dependency = defineModule(childModule);
                 dependencies.push(dependency.name);

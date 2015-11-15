@@ -63,7 +63,7 @@ declare class OAuthTokenServiceProvider implements ng.IServiceProvider {
      *
      * @param {object} params - An `object` of params to extend.
      */
-    configure(params: any): this;
+    configure(params: any): OAuthTokenServiceProvider;
     $get($location: any, $window: any, $settings: any): OAuthTokenService;
 }
 export default OAuthTokenService;

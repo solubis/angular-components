@@ -50,7 +50,7 @@ declare class RestServiceProvider implements ng.IServiceProvider {
      *
      * @param {object} params - An `object` of params to extend.
      */
-    configure(params: Object): this;
+    configure(params: Object): RestServiceProvider;
     $get($http: any, $window: any, $rootScope: any, $log: any): RestService;
 }
 export default RestService;
