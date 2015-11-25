@@ -43,7 +43,7 @@ var Core = (function () {
     Core = __decorate([
         decorators_1.Component({
             name: 'coreModule',
-            dependencies: []
+            providers: []
         }), 
         __metadata('design:paramtypes', [])
     ], Core);

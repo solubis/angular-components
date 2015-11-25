@@ -128,8 +128,8 @@ function defineModule(target, dependencies) {
 function bootstrap(component) {
     angular.element(document).ready(function () {
         var dependencies = ['templates'];
-        for (var _i = 0, modules_1 = modules; _i < modules_1.length; _i++) {
-            var childModule = modules_1[_i];
+        for (var _i = 0; _i < modules.length; _i++) {
+            var childModule = modules[_i];
             if (childModule !== component) {
                 var dependency = defineModule(childModule);
                 dependencies.push(dependency.name);
@@ -139,14 +139,17 @@ function bootstrap(component) {
         for (var _a = 0, _b = items.directives; _a < _b.length; _a++) {
             var directive = _b[_a];
             module.directive(directive.name, directive.fn);
+            console.log("Directive:" + directive.name);
         }
         for (var _c = 0, _d = items.services; _c < _d.length; _c++) {
             var service = _d[_c];
             module.service(service.name, service.fn);
+            console.log("Service:" + service.name);
         }
         for (var _e = 0, _f = items.providers; _e < _f.length; _e++) {
             var provider = _f[_e];
             module.provider(provider.name, provider.fn);
+            console.log("Provider:" + provider.name);
         }
         try {
             angular.module('templates');

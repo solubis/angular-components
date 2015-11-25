@@ -190,14 +190,17 @@ function bootstrap(component: Function) {
 
         for (let directive of items.directives) {
             module.directive(directive.name, directive.fn);
+            console.log(`Directive:${directive.name}`);
         }
 
         for (let service of items.services) {
             module.service(service.name, service.fn);
+            console.log(`Service:${service.name}`);
         }
 
         for (let provider of items.providers) {
             module.provider(provider.name, provider.fn);
+            console.log(`Provider:${provider.name}`);
         }
 
         try {

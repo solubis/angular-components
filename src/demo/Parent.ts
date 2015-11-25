@@ -4,7 +4,7 @@ import './Child';
 
 @Component({
     selector: 'parent',
-    dependencies: ['child']
+    providers: ['child']
 })
 class Parent {
     @Inject('$logProvider')

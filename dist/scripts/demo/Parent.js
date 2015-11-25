@@ -37,7 +37,7 @@ var Parent = (function () {
     Parent = __decorate([
         decorators_1.Component({
             selector: 'parent',
-            dependencies: ['child']
+            providers: ['child']
         }), 
         __metadata('design:paramtypes', [])
     ], Parent);

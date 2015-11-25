@@ -38,5 +38,8 @@
         "src/security/SecurityService.ts",
         "typings/tsd.d.ts"
     ],
-    "exclude": []
+    "exclude": [],
+    "atom": {
+        "rewriteTsconfig": true
+    }
 }

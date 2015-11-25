@@ -32,7 +32,7 @@ var TestComponent = (function () {
         decorators_1.Component({
             selector: 'test-component',
             templateUrl: 'test.html',
-            dependencies: ['parent']
+            providers: ['parent']
         }),
         decorators_1.Inject('childService', '$http', '$log'), 
         __metadata('design:paramtypes', [TestService, Function, Object])

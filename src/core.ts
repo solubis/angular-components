@@ -6,7 +6,7 @@ import {HttpInterceptor} from './core/HttpInterceptor';
 
 @Component({
     name: 'coreModule',
-    dependencies: []
+    providers: []
 })
 class Core {
 

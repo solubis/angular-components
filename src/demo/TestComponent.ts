@@ -6,7 +6,7 @@ import './Parent';
 @Component({
     selector: 'test-component',
     templateUrl: 'test.html',
-    dependencies: ['parent']
+    providers: ['parent']
 })
 @Inject('childService', '$http', '$log')
 class TestComponent {
