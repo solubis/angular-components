@@ -1,4 +1,4 @@
-import {Service, Inject } from '../decorators';
+import {Service} from '../decorators';
 import {ChildService} from './ChildService';
 
 @Service()

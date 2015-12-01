@@ -25,7 +25,7 @@ class ChildComponent {
 
     run(
         @Inject('$log') log: angular.ILogService, service: ChildService) {
-            
+
         log.debug('RUN: ChildComponent, injected service method response: ' + service.title);
     }
 }

@@ -2,12 +2,10 @@
  * REST communication and error handling
  */
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") return Reflect.decorate(decorators, target, key, desc);
-    switch (arguments.length) {
-        case 2: return decorators.reduceRight(function(o, d) { return (d && d(o)) || o; }, target);
-        case 3: return decorators.reduceRight(function(o, d) { return (d && d(target, key)), void 0; }, void 0);
-        case 4: return decorators.reduceRight(function(o, d) { return (d && d(target, key, o)) || o; }, desc);
-    }
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
@@ -170,17 +168,16 @@ var RestServiceProvider = (function () {
     RestServiceProvider.prototype.$get = function ($http, $window, $rootScope, $log) {
         return new RestService($http, $window, $rootScope, $log, this.config);
     };
-    Object.defineProperty(RestServiceProvider.prototype, "$get",
-        __decorate([
-            decorators_1.Inject(),
-            __param(0, decorators_1.Inject('$http')),
-            __param(1, decorators_1.Inject('$window')),
-            __param(2, decorators_1.Inject('$rootScope')),
-            __param(3, decorators_1.Inject('$log')), 
-            __metadata('design:type', Function), 
-            __metadata('design:paramtypes', [Object, Object, Object, Object]), 
-            __metadata('design:returntype', RestService)
-        ], RestServiceProvider.prototype, "$get", Object.getOwnPropertyDescriptor(RestServiceProvider.prototype, "$get")));
+    __decorate([
+        decorators_1.Inject(),
+        __param(0, decorators_1.Inject('$http')),
+        __param(1, decorators_1.Inject('$window')),
+        __param(2, decorators_1.Inject('$rootScope')),
+        __param(3, decorators_1.Inject('$log')), 
+        __metadata('design:type', Function), 
+        __metadata('design:paramtypes', [Object, Object, Object, Object]), 
+        __metadata('design:returntype', RestService)
+    ], RestServiceProvider.prototype, "$get", null);
     RestServiceProvider = __decorate([
         decorators_1.Provider(), 
         __metadata('design:paramtypes', [])

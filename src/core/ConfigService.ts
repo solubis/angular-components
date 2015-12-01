@@ -35,4 +35,4 @@ class ConfigServiceProvider implements ng.IServiceProvider {
     }
 }
 
-export { ConfigServiceProvider, ConfigService };
+export { ConfigServiceProvider, ConfigService }

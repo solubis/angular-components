@@ -1,4 +1,4 @@
-import {Component, Service, Inject, Value, Directive, Filter, bootstrap } from '../decorators';
+import {Component, Inject, Value, bootstrap } from '../decorators';
 import {ParentService} from './ParentService';
 import './ChildComponent';
 
@@ -7,6 +7,9 @@ import './ChildComponent';
     templateUrl: 'test.html'
 })
 class TestComponent {
+
+    @Value('testValue') static test: string = 'TEST VALUE';
+
     title: string;
 
     constructor(
@@ -28,8 +31,6 @@ class TestComponent {
     config( @Inject('$logProvider') logProvider) {
         logProvider.debugEnabled(true);
     }
-
-    @Value('testValue') static test: string = 'TEST VALUE';
 }
 
 bootstrap(TestComponent);

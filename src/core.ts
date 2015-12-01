@@ -1,9 +1,7 @@
 /**
  * Module with services for error handler, local storage settings and small utils
  */
-import {Component, Inject} from './decorators';
-import {HttpInterceptor} from './core/HttpInterceptor';
-import {RestService} from './core/RestService';
+import {Component} from './decorators';
 
 @Component({
     name: 'coreModule'

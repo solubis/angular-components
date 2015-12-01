@@ -1,8 +1,6 @@
 import {Service, Inject} from '../decorators';
 import * as moment from 'moment';
 
-const DATE_FORMAT = 'DD.MM.YYYY HH:mm:ss';
-
 /**
  * Small utils
  */

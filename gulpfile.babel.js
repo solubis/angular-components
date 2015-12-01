@@ -150,7 +150,7 @@ gulp.task('tslint', () => {
  */
 gulp.task('typescript', ['tslint'], () => {
     let project = $.typescript.createProject(
-        config.tsconfig
+        config.typescript
     );
 
     let result = gulp.src(config.src.typescripts)

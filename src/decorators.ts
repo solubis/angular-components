@@ -5,11 +5,11 @@ let services: any[] = [];
 let providers: any[] = [];
 let filters: any[] = [];
 let values: any[] = [];
-let directives: any[] = []
+let directives: any[] = [];
 let modules: ITarget[] = [];
 
 export interface IBasicDecoratorOptions {
-    name?: string
+    name?: string;
 }
 
 export interface IComponentDecoratorOptions {
@@ -144,7 +144,7 @@ function initInjectables(target: Function, key?: string) {
     }
 
     let params = Reflect.getOwnMetadata('design:paramtypes', target, key);
-    
+
     let names: string[] = params && params.map(param => /function ([^(]*)/.exec(param.toString())[1]);
 
     setInjectables(names, target, key);
@@ -165,7 +165,11 @@ function setInjectables(names: string[], target: Function, key?: string): void {
 }
 
 function getInjectables(target: Function, key?: string) {
-    let injectables = key ? (target.prototype && target.prototype[key] ? target.prototype[key].$inject : target[key] && target[key].$inject) : target.$inject;
+    let injectables = key ?
+        (target.prototype && target.prototype[key] ?
+            target.prototype[key].$inject
+            : target[key] && target[key].$inject)
+        : target.$inject;
 
     return injectables;
 }
@@ -177,7 +181,7 @@ function setInjectable(index: number, value: string, target: ITarget, key?: stri
     injectables[index] = value;
 }
 
-function getTargetName(target){
+function getTargetName(target) {
     return typeof target === 'function' ? target.name : target.constructor.name;
 }
 

@@ -53,10 +53,10 @@ class HttpInterceptor {
 
     @Inject()
     public static factory(
-        @Inject('$rootScope') $rootScope: ng.IRootScopeService, 
-        @Inject('$q') $q: ng.IQService, 
+        @Inject('$rootScope') $rootScope: ng.IRootScopeService,
+        @Inject('$q') $q: ng.IQService,
         @Inject('$log') $log: ng.ILogService) {
-            
+
         return new HttpInterceptor($rootScope, $q, $log);
     }
 

@@ -1,4 +1,4 @@
-import {Component, Service, Inject } from '../decorators';
+import {Service, Inject } from '../decorators';
 
 @Service()
 class ChildService {
