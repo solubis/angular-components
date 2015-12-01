@@ -3,21 +3,12 @@
  */
 import {Component, Inject} from './decorators';
 import {HttpInterceptor} from './core/HttpInterceptor';
+import {RestService} from './core/RestService';
 
 @Component({
-    name: 'coreModule',
-    providers: []
+    name: 'coreModule'
 })
 class Core {
-
-    @Inject('$httpProvider')
-    config($httpProvider: ng.IHttpProvider) {
-    }
-
-    @Inject('$rest')
-    run($rest) {
-        $rest.init();
-    }
 }
 
 export * from './core/ConfigService';

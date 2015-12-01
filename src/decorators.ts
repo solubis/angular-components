@@ -17,7 +17,7 @@ export interface IComponentDecoratorOptions {
     template?: string;
     selector?: string;
     name?: string;
-    dependencies?: Function[];
+    dependencies?: string[];
 }
 
 export interface ITarget extends Function {
@@ -48,8 +48,8 @@ function Component(options: IComponentDecoratorOptions): ClassDecorator {
     let decorator: ClassDecorator;
 
     decorator = (target: ITarget) => {
-        if (!options.selector) {
-            throw new Error('@Component() must contain "selector" or "name" property!');
+        if (!options.selector && !options.name) {
+            throw new Error(`@Component() for ${target.name} class must contain "selector" or "name" property!`);
         }
 
         options.name = options.name || toCamelCase(options.selector);
@@ -80,12 +80,18 @@ function Component(options: IComponentDecoratorOptions): ClassDecorator {
     return decorator;
 }
 
-function Inject(name: string) {
+function Inject(name?: string) {
     let decorator;
 
-    decorator = (target: Function, key: string, index: number) => {
-        setInjectable(index, name, target, key);
-    };
+    if (name) {
+        decorator = (target: ITarget, key: string, index: number) => {
+            setInjectable(index, name, target, key);
+        };
+    } else {
+        decorator = (target: ITarget, key?: string, descriptor?: TypedPropertyDescriptor<any>) => {
+            initInjectables(target);
+        };
+    }
 
     return decorator;
 }
@@ -100,9 +106,11 @@ function classDecorator(decoratorName: string, options: IBasicDecoratorOptions, 
     let decorator: ClassDecorator;
 
     decorator = (target: ITarget) => {
-        let name = options && options.name || target.name;
+        let name = options && options.name.replace('Provider', '') || target.name.replace('Provider', '');
 
-        array.push({ name, fn: target });
+        if (array) {
+            array.push({ name, fn: target });
+        }
 
         initInjectables(target);
     };
@@ -110,15 +118,19 @@ function classDecorator(decoratorName: string, options: IBasicDecoratorOptions, 
     return decorator;
 }
 
-function propertyDecorator(decoratorName: string, name: string, array: any[]): PropertyDecorator {
+function propertyDecorator(decoratorName: string, name: string, array?: any[]): PropertyDecorator {
     let decorator: PropertyDecorator;
 
     decorator = (target: ITarget, key?: string, descriptor?: TypedPropertyDescriptor<any>) => {
-        if (!name ) {
+        if (!name) {
             throw new Error(`${decoratorName} decorator for ${key} must contain "name"!`);
         }
-        
-        array.push({ name, fn: (descriptor && descriptor.value) || target[key] });
+
+        if (array) {
+            array.push({ name, fn: (descriptor && descriptor.value) || target[key] });
+        }
+
+        initInjectables(target);
     };
 
     return decorator;
@@ -132,6 +144,7 @@ function initInjectables(target: Function, key?: string) {
     }
 
     let params = Reflect.getOwnMetadata('design:paramtypes', target, key);
+    
     let names: string[] = params && params.map(param => /function ([^(]*)/.exec(param.toString())[1]);
 
     setInjectables(names, target, key);
@@ -157,12 +170,15 @@ function getInjectables(target: Function, key?: string) {
     return injectables;
 }
 
-function setInjectable(index: number, value: string, target: Function, key?: string) {
+function setInjectable(index: number, value: string, target: ITarget, key?: string) {
     let injectables = getInjectables(target, key) || initInjectables(target, key);
 
+    console.log(`@Inject ${getTargetName(target)} ${key} [${index}] = ${value}`);
     injectables[index] = value;
+}
 
-    setInjectables(injectables, target, key);
+function getTargetName(target){
+    return typeof target === 'function' ? target.name : target.constructor.name;
 }
 
 function toCamelCase(str: string) {
@@ -172,9 +188,6 @@ function toCamelCase(str: string) {
 
 function setModule(target: ITarget, options: IComponentDecoratorOptions): void {
     Reflect.defineMetadata('moduleName', options.name + 'Module', target);
-
-    initInjectables(target, 'run');
-    initInjectables(target, 'config');
 
     modules.push(target);
 }
@@ -187,7 +200,8 @@ function isModule(target: Function, options: IComponentDecoratorOptions): boolea
 
 function defineModule(target: ITarget, dependencies?: string[]): ng.IModule {
     let name = Reflect.getOwnMetadata('moduleName', target);
-    let module = angular.module(name, [].concat(dependencies || []));
+    let options = Reflect.getOwnMetadata('options', target);
+    let module = angular.module(name, [].concat(dependencies || []).concat(options.dependencies || []));
 
     module.run(target.prototype.run || (() => { }));
     module.config(target.prototype.config || (() => { }));
@@ -224,7 +238,7 @@ function bootstrap(component: Function) {
             module.provider(provider.name, provider.fn);
             console.log(`Provider:${provider.name}`);
         }
-        
+
         for (let value of values) {
             module.value(value.name, value.fn);
             console.log(`Value:${value.name}`);

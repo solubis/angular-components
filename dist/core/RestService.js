@@ -12,6 +12,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 var decorators_1 = require('../decorators');
 var moment = require('moment');
 var RestService = (function () {
@@ -143,10 +146,6 @@ var RestService = (function () {
     RestService.prototype.remove = function (params) {
         return this.request('DELETE', params);
     };
-    RestService = __decorate([
-        decorators_1.Inject('$http', '$window', '$rootScope', '$log', 'config'), 
-        __metadata('design:paramtypes', [Function, Object, Object, Object, Object])
-    ], RestService);
     return RestService;
 })();
 exports.RestService = RestService;
@@ -173,15 +172,17 @@ var RestServiceProvider = (function () {
     };
     Object.defineProperty(RestServiceProvider.prototype, "$get",
         __decorate([
-            decorators_1.Inject('$http', '$window', '$rootScope', '$log'), 
+            decorators_1.Inject(),
+            __param(0, decorators_1.Inject('$http')),
+            __param(1, decorators_1.Inject('$window')),
+            __param(2, decorators_1.Inject('$rootScope')),
+            __param(3, decorators_1.Inject('$log')), 
             __metadata('design:type', Function), 
             __metadata('design:paramtypes', [Object, Object, Object, Object]), 
             __metadata('design:returntype', RestService)
         ], RestServiceProvider.prototype, "$get", Object.getOwnPropertyDescriptor(RestServiceProvider.prototype, "$get")));
     RestServiceProvider = __decorate([
-        decorators_1.Provider({
-            name: '$rest'
-        }), 
+        decorators_1.Provider(), 
         __metadata('design:paramtypes', [])
     ], RestServiceProvider);
     return RestServiceProvider;

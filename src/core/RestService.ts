@@ -2,7 +2,7 @@
  * REST communication and error handling
  */
 
-import {Provider, Inject} from '../decorators';
+import {Provider, Inject, Service} from '../decorators';
 import * as moment from 'moment';
 
 export interface IRequestConfig extends ng.IRequestConfig {
@@ -10,7 +10,6 @@ export interface IRequestConfig extends ng.IRequestConfig {
     mockup?: boolean;
 }
 
-@Inject('$http', '$window', '$rootScope', '$log', 'config')
 class RestService {
 
     public url;
@@ -179,9 +178,7 @@ class RestService {
     }
 }
 
-@Provider({
-    name: '$rest'
-})
+@Provider()
 class RestServiceProvider implements ng.IServiceProvider {
 
     private config = {
@@ -194,7 +191,7 @@ class RestServiceProvider implements ng.IServiceProvider {
      * @param {object} params - An `object` of params to extend.
      */
 
-    configure(params: Object) {
+    configure(params: Object) { 
         if (!(params instanceof Object)) {
             throw new TypeError('Invalid argument: "config" must be an "Object".');
         }
@@ -204,8 +201,13 @@ class RestServiceProvider implements ng.IServiceProvider {
         return this;
     }
 
-    @Inject('$http', '$window', '$rootScope', '$log')
-    $get($http, $window, $rootScope, $log): RestService {
+    @Inject()
+    $get(
+        @Inject('$http') $http, 
+        @Inject('$window') $window, 
+        @Inject('$rootScope') $rootScope, 
+        @Inject('$log') $log): RestService {
+            
         return new RestService($http, $window, $rootScope, $log, this.config);
     }
 }

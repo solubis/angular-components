@@ -15,10 +15,10 @@
   "bugs": {
     "url": "https://github.com/solubis/components/issues"
   },
-  "main": "dist/scripts/index.js",
-  "typings": "dist/scripts/index.d.ts",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "typescript": {
-    "definition": "dist/scripts/index.d.ts"
+    "definition": "dist/index.d.ts"
   },
   "devDependencies": {
     "angular": "*",

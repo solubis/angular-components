@@ -19,29 +19,9 @@ var decorators_1 = require('./decorators');
 var Core = (function () {
     function Core() {
     }
-    Core.prototype.config = function ($httpProvider) {
-    };
-    Core.prototype.run = function ($rest) {
-        $rest.init();
-    };
-    Object.defineProperty(Core.prototype, "config",
-        __decorate([
-            decorators_1.Inject('$httpProvider'), 
-            __metadata('design:type', Function), 
-            __metadata('design:paramtypes', [Object]), 
-            __metadata('design:returntype', void 0)
-        ], Core.prototype, "config", Object.getOwnPropertyDescriptor(Core.prototype, "config")));
-    Object.defineProperty(Core.prototype, "run",
-        __decorate([
-            decorators_1.Inject('$rest'), 
-            __metadata('design:type', Function), 
-            __metadata('design:paramtypes', [Object]), 
-            __metadata('design:returntype', void 0)
-        ], Core.prototype, "run", Object.getOwnPropertyDescriptor(Core.prototype, "run")));
     Core = __decorate([
         decorators_1.Component({
-            name: 'coreModule',
-            providers: []
+            name: 'coreModule'
         }), 
         __metadata('design:paramtypes', [])
     ], Core);

@@ -1,3 +1,4 @@
+import {Service, Inject} from '../decorators';
 import * as moment from 'moment';
 
 const DATE_FORMAT = 'DD.MM.YYYY HH:mm:ss';
@@ -6,12 +7,12 @@ const DATE_FORMAT = 'DD.MM.YYYY HH:mm:ss';
  * Small utils
  */
 
-/*@ngInject*/
+@Service()
 class UtilsService {
 
     constructor(
-        private $filter = undefined,
-        private $dateFormat = DATE_FORMAT) {
+        @Inject('$filter') private $filter,
+        @Inject('$dateFormat') private $dateFormat) {
     }
 
     /*

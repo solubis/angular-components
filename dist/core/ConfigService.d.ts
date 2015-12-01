@@ -1,3 +1,5 @@
+interface ConfigService {
+}
 declare class ConfigServiceProvider implements ng.IServiceProvider {
     private config;
     constructor();
@@ -9,5 +11,4 @@ declare class ConfigServiceProvider implements ng.IServiceProvider {
     configure(params: any): ConfigServiceProvider;
     $get(): {};
 }
-export { ConfigServiceProvider };
-export default ConfigServiceProvider;
+export { ConfigServiceProvider, ConfigService };

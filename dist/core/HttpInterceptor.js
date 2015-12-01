@@ -12,6 +12,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 var decorators_1 = require('../decorators');
 function replacer(key, value) {
     if (typeof value === 'string' && value.length > 35) {
@@ -62,7 +65,10 @@ var HttpInterceptor = (function () {
     };
     Object.defineProperty(HttpInterceptor, "factory",
         __decorate([
-            decorators_1.Inject('$rootScope', '$q', '$log'), 
+            decorators_1.Inject(),
+            __param(0, decorators_1.Inject('$rootScope')),
+            __param(1, decorators_1.Inject('$q')),
+            __param(2, decorators_1.Inject('$log')), 
             __metadata('design:type', Function), 
             __metadata('design:paramtypes', [Object, Function, Object]), 
             __metadata('design:returntype', void 0)

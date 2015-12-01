@@ -51,8 +51,12 @@ class HttpInterceptor {
         return this.$q.reject(rejection);
     };
 
-    @Inject('$rootScope', '$q', '$log')
-    public static factory($rootScope: ng.IRootScopeService, $q: ng.IQService, $log: ng.ILogService) {
+    @Inject()
+    public static factory(
+        @Inject('$rootScope') $rootScope: ng.IRootScopeService, 
+        @Inject('$q') $q: ng.IQService, 
+        @Inject('$log') $log: ng.ILogService) {
+            
         return new HttpInterceptor($rootScope, $q, $log);
     }
 

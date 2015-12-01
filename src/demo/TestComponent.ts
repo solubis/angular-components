@@ -14,21 +14,21 @@ class TestComponent {
         @Inject('$log') private log: angular.ILogService) {
 
         this.title = service.title;
-        
+
         log.debug('CONSTRUCTOR: TestComponent, injected service method response: ' + service.title);
     }
 
     run(
         service: ParentService,
         @Inject('$log') log) {
-            
+
         log.debug('RUN: TestComponent, injected service method response: ' + service.title);
     }
-    
-    config(@Inject('$logProvider') logProvider){
+
+    config( @Inject('$logProvider') logProvider) {
         logProvider.debugEnabled(true);
     }
-    
+
     @Value('testValue') static test: string = 'TEST VALUE';
 }
 

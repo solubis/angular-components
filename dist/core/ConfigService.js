@@ -30,15 +30,18 @@ var ConfigServiceProvider = (function () {
     ConfigServiceProvider.prototype.$get = function () {
         return this.config;
     };
+    Object.defineProperty(ConfigServiceProvider.prototype, "$get",
+        __decorate([
+            decorators_1.Inject(), 
+            __metadata('design:type', Function), 
+            __metadata('design:paramtypes', []), 
+            __metadata('design:returntype', void 0)
+        ], ConfigServiceProvider.prototype, "$get", Object.getOwnPropertyDescriptor(ConfigServiceProvider.prototype, "$get")));
     ConfigServiceProvider = __decorate([
-        decorators_1.Provider({
-            name: '$config'
-        }), 
+        decorators_1.Provider(), 
         __metadata('design:paramtypes', [])
     ], ConfigServiceProvider);
     return ConfigServiceProvider;
 })();
 exports.ConfigServiceProvider = ConfigServiceProvider;
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = ConfigServiceProvider;
 //# sourceMappingURL=ConfigService.js.map

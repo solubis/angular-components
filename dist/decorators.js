@@ -29,8 +29,8 @@ exports.Directive = Directive;
 function Component(options) {
     var decorator;
     decorator = function (target) {
-        if (!options.selector) {
-            throw new Error('@Component() must contain "selector" or "name" property!');
+        if (!options.selector && !options.name) {
+            throw new Error("@Component() for " + target.name + " class must contain \"selector\" or \"name\" property!");
         }
         options.name = options.name || toCamelCase(options.selector);
         if (options.templateUrl || options.template) {
@@ -55,9 +55,16 @@ function Component(options) {
 exports.Component = Component;
 function Inject(name) {
     var decorator;
-    decorator = function (target, key, index) {
-        setInjectable(index, name, target, key);
-    };
+    if (name) {
+        decorator = function (target, key, index) {
+            setInjectable(index, name, target, key);
+        };
+    }
+    else {
+        decorator = function (target, key, descriptor) {
+            initInjectables(target);
+        };
+    }
     return decorator;
 }
 exports.Inject = Inject;
@@ -67,8 +74,10 @@ exports.Inject = Inject;
 function classDecorator(decoratorName, options, array) {
     var decorator;
     decorator = function (target) {
-        var name = options && options.name || target.name;
-        array.push({ name: name, fn: target });
+        var name = options && options.name.replace('Provider', '') || target.name.replace('Provider', '');
+        if (array) {
+            array.push({ name: name, fn: target });
+        }
         initInjectables(target);
     };
     return decorator;
@@ -79,7 +88,10 @@ function propertyDecorator(decoratorName, name, array) {
         if (!name) {
             throw new Error(decoratorName + " decorator for " + key + " must contain \"name\"!");
         }
-        array.push({ name: name, fn: (descriptor && descriptor.value) || target[key] });
+        if (array) {
+            array.push({ name: name, fn: (descriptor && descriptor.value) || target[key] });
+        }
+        initInjectables(target);
     };
     return decorator;
 }
@@ -112,8 +124,11 @@ function getInjectables(target, key) {
 }
 function setInjectable(index, value, target, key) {
     var injectables = getInjectables(target, key) || initInjectables(target, key);
+    console.log("@Inject " + getTargetName(target) + " " + key + " [" + index + "] = " + value);
     injectables[index] = value;
-    setInjectables(injectables, target, key);
+}
+function getTargetName(target) {
+    return typeof target === 'function' ? target.name : target.constructor.name;
 }
 function toCamelCase(str) {
     str = str.charAt(0).toLowerCase() + str.substring(1);
@@ -121,8 +136,6 @@ function toCamelCase(str) {
 }
 function setModule(target, options) {
     Reflect.defineMetadata('moduleName', options.name + 'Module', target);
-    initInjectables(target, 'run');
-    initInjectables(target, 'config');
     modules.push(target);
 }
 function isModule(target, options) {
@@ -132,7 +145,8 @@ function isModule(target, options) {
 }
 function defineModule(target, dependencies) {
     var name = Reflect.getOwnMetadata('moduleName', target);
-    var module = angular.module(name, [].concat(dependencies || []));
+    var options = Reflect.getOwnMetadata('options', target);
+    var module = angular.module(name, [].concat(dependencies || []).concat(options.dependencies || []));
     module.run(target.prototype.run || (function () { }));
     module.config(target.prototype.config || (function () { }));
     return module;

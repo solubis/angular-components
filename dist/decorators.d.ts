@@ -6,7 +6,7 @@ export interface IComponentDecoratorOptions {
     template?: string;
     selector?: string;
     name?: string;
-    dependencies?: Function[];
+    dependencies?: string[];
 }
 export interface ITarget extends Function {
     name: string;
@@ -17,6 +17,6 @@ declare function Filter(name: string): PropertyDecorator;
 declare function Value(name: string): PropertyDecorator;
 declare function Directive(name: string): PropertyDecorator;
 declare function Component(options: IComponentDecoratorOptions): ClassDecorator;
-declare function Inject(name: string): any;
+declare function Inject(name?: string): any;
 declare function bootstrap(component: Function): void;
 export { Component, Inject, Service, Provider, Filter, Directive, Value, bootstrap };

@@ -1,10 +1,10 @@
+import {Provider, Inject} from '../decorators';
+
 declare var window: any;
 
-import {Provider} from '../decorators';
+interface ConfigService { }
 
-@Provider({
-    name: '$config'
-})
+@Provider()
 class ConfigServiceProvider implements ng.IServiceProvider {
 
     private config = {};
@@ -29,10 +29,10 @@ class ConfigServiceProvider implements ng.IServiceProvider {
         return this;
     }
 
+    @Inject()
     $get() {
         return this.config;
     }
 }
 
-export { ConfigServiceProvider };
-export default ConfigServiceProvider;
+export { ConfigServiceProvider, ConfigService };

@@ -4,7 +4,7 @@
 declare class UtilsService {
     private $filter;
     private $dateFormat;
-    constructor($filter?: any, $dateFormat?: string);
+    constructor($filter: any, $dateFormat: any);
     formChanges(form: any, model: any): {};
     isReadyToSave(form: any, exclusions: any): boolean;
     isEmpty(obj: any): boolean;
