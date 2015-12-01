@@ -12,7 +12,6 @@ class Core {
 
     @Inject('$httpProvider')
     config($httpProvider: ng.IHttpProvider) {
-        $httpProvider.interceptors.push(HttpInterceptor.factory);
     }
 
     @Inject('$rest')

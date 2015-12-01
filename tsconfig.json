@@ -9,37 +9,7 @@
         "sourceMap": true,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "outDir": "dist/scripts"
+        "outDir": "dist"
     },
-    "filesGlob": [
-        "src/**/*.ts",
-        "typings/tsd.d.ts",
-        "!dist/**",
-        "!node_modules/**"
-    ],
-    "files": [
-        "src/core.ts",
-        "src/core/ConfigService.ts",
-        "src/core/HttpInterceptor.ts",
-        "src/core/RestService.ts",
-        "src/core/SettingsService.ts",
-        "src/core/UtilsService.ts",
-        "src/decorators.ts",
-        "src/demo/Child.ts",
-        "src/demo/IService.ts",
-        "src/demo/Parent.ts",
-        "src/demo/TestComponent.ts",
-        "src/index.ts",
-        "src/security.ts",
-        "src/security/AuthorizeDirective.ts",
-        "src/security/OAuthInterceptor.ts",
-        "src/security/OAuthTokenService.ts",
-        "src/security/QueryStringService.ts",
-        "src/security/SecurityService.ts",
-        "typings/tsd.d.ts"
-    ],
-    "exclude": [],
-    "atom": {
-        "rewriteTsconfig": true
-    }
+    "exclude": ["dist", "node_modules"]
 }

@@ -1,44 +1,35 @@
-import {Component, Service, Inject, bootstrap } from '../decorators';
-import IService from './IService';
-
-import './Parent';
+import {Component, Service, Inject, Value, Directive, Filter, bootstrap } from '../decorators';
+import {ParentService} from './ParentService';
+import './ChildComponent';
 
 @Component({
     selector: 'test-component',
-    templateUrl: 'test.html',
-    providers: ['parent']
+    templateUrl: 'test.html'
 })
-@Inject('childService', '$http', '$log')
 class TestComponent {
     title: string;
 
     constructor(
-        private service: TestService,
-        private http: angular.IHttpService,
-        private log: angular.ILogService) {
+        private service: ParentService,
+        @Inject('$log') private log: angular.ILogService) {
 
         this.title = service.title;
+        
+        log.debug('CONSTRUCTOR: TestComponent, injected service method response: ' + service.title);
     }
 
-    @Inject('childService', '$log')
-    run(service, log) {
-        log.debug('TestComponent with ' + service.title);
+    run(
+        service: ParentService,
+        @Inject('$log') log) {
+            
+        log.debug('RUN: TestComponent, injected service method response: ' + service.title);
     }
-}
-
-@Service({
-    name: 'myService'
-})
-class TestService implements IService {
-    title: string;
-
-    constructor() {
-        this.title = 'myService';
+    
+    config(@Inject('$logProvider') logProvider){
+        logProvider.debugEnabled(true);
     }
-
-    getName() {
-        return this.title;
-    }
+    
+    @Value('testValue') static test: string = 'TEST VALUE';
 }
 
 bootstrap(TestComponent);
