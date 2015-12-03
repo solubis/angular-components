@@ -26,6 +26,18 @@ function Directive(name) {
     return propertyDecorator('Directive', name, directives);
 }
 exports.Directive = Directive;
+function Action(name) {
+    var decorator;
+    decorator = function (target, key, descriptor) {
+        if (!name) {
+            throw new Error("@Action decorator for " + key + " must contain \"name\"!");
+        }
+        target['handlersMap'] = Object.assign({}, target['handlersMap'], (_a = {}, _a[name] = target[key], _a));
+        var _a;
+    };
+    return decorator;
+}
+exports.Action = Action;
 function Component(options) {
     var decorator;
     decorator = function (target) {
@@ -119,12 +131,15 @@ function setInjectables(names, target, key) {
     }
 }
 function getInjectables(target, key) {
-    var injectables = key ? (target.prototype && target.prototype[key] ? target.prototype[key].$inject : target[key] && target[key].$inject) : target.$inject;
+    var injectables = key ?
+        (target.prototype && target.prototype[key] ?
+            target.prototype[key].$inject
+            : target[key] && target[key].$inject)
+        : target.$inject;
     return injectables;
 }
 function setInjectable(index, value, target, key) {
     var injectables = getInjectables(target, key) || initInjectables(target, key);
-    console.log("@Inject " + getTargetName(target) + " " + key + " [" + index + "] = " + value);
     injectables[index] = value;
 }
 function getTargetName(target) {
@@ -166,22 +181,18 @@ function bootstrap(component) {
         for (var _a = 0; _a < directives.length; _a++) {
             var directive = directives[_a];
             module.directive(directive.name, directive.fn);
-            console.log("Directive:" + directive.name);
         }
         for (var _b = 0; _b < services.length; _b++) {
             var service = services[_b];
             module.service(service.name, service.fn);
-            console.log("Service:" + service.name);
         }
         for (var _c = 0; _c < providers.length; _c++) {
             var provider = providers[_c];
             module.provider(provider.name, provider.fn);
-            console.log("Provider:" + provider.name);
         }
         for (var _d = 0; _d < values.length; _d++) {
             var value = values[_d];
             module.value(value.name, value.fn);
-            console.log("Value:" + value.name);
         }
         try {
             angular.module('templates');

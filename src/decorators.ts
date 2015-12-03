@@ -44,6 +44,20 @@ function Directive(name: string): PropertyDecorator {
     return propertyDecorator('Directive', name, directives);
 }
 
+function Action(name: number): PropertyDecorator {
+    let decorator: PropertyDecorator;
+
+    decorator = (target: ITarget, key?: string, descriptor?: TypedPropertyDescriptor<any>) => {
+        if (!name) {
+            throw new Error(`@Action decorator for ${key} must contain "name"!`);
+        }
+
+        target['handlersMap'] = Object.assign({}, target['handlersMap'], { [name]: target[key] });
+    };
+
+    return decorator;
+}
+
 function Component(options: IComponentDecoratorOptions): ClassDecorator {
     let decorator: ClassDecorator;
 
@@ -177,7 +191,6 @@ function getInjectables(target: Function, key?: string) {
 function setInjectable(index: number, value: string, target: ITarget, key?: string) {
     let injectables = getInjectables(target, key) || initInjectables(target, key);
 
-    console.log(`@Inject ${getTargetName(target)} ${key} [${index}] = ${value}`);
     injectables[index] = value;
 }
 
@@ -230,22 +243,18 @@ function bootstrap(component: Function) {
 
         for (let directive of directives) {
             module.directive(directive.name, directive.fn);
-            console.log(`Directive:${directive.name}`);
         }
 
         for (let service of services) {
             module.service(service.name, service.fn);
-            console.log(`Service:${service.name}`);
         }
 
         for (let provider of providers) {
             module.provider(provider.name, provider.fn);
-            console.log(`Provider:${provider.name}`);
         }
 
         for (let value of values) {
             module.value(value.name, value.fn);
-            console.log(`Value:${value.name}`);
         }
 
         try {
@@ -260,4 +269,4 @@ function bootstrap(component: Function) {
     });
 }
 
-export {Component, Inject, Service, Provider, Filter, Directive, Value, bootstrap};
+export {Component, Inject, Service, Provider, Filter, Directive, Value, Action, bootstrap};

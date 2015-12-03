@@ -12,7 +12,6 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 var decorators_1 = require('../decorators');
 var moment = require('moment');
-var DATE_FORMAT = 'DD.MM.YYYY HH:mm:ss';
 /**
  * Small utils
  */
