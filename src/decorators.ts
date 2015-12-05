@@ -7,6 +7,7 @@ let filters: any[] = [];
 let values: any[] = [];
 let directives: any[] = [];
 let modules: ITarget[] = [];
+let targets: ITarget[] = [];
 
 export interface IBasicDecoratorOptions {
     name?: string;
@@ -150,7 +151,7 @@ function propertyDecorator(decoratorName: string, name: string, array?: any[]): 
     return decorator;
 }
 
-function initInjectables(target: Function, key?: string) {
+function initInjectables(target: ITarget, key?: string) {
     let injectables = getInjectables(target, key);
 
     if (injectables) {
@@ -162,6 +163,8 @@ function initInjectables(target: Function, key?: string) {
     let names: string[] = params && params.map(param => /function ([^(]*)/.exec(param.toString())[1]);
 
     setInjectables(names, target, key);
+
+    targets.push(target);
 
     return names;
 }
@@ -186,6 +189,18 @@ function getInjectables(target: Function, key?: string) {
         : target.$inject;
 
     return injectables;
+}
+
+function checkTargets() {
+    for (let target of targets) {
+        if (target.$inject) {
+            for (let provider of target.$inject) {
+                if (provider === 'Object' || provider === 'Function') {
+                    throw new Error(`Check injections for ${target.name} class (define type or use @Inject)`);
+                }
+            }
+        }
+    }
 }
 
 function setInjectable(index: number, value: string, target: ITarget, key?: string) {
@@ -228,6 +243,10 @@ function defineModule(target: ITarget, dependencies?: string[]): ng.IModule {
 
 function bootstrap(component: Function) {
     let options = Reflect.getOwnMetadata('options', component);
+
+    Reflect.defineMetadata('moduleName', options.name + 'Module', component);
+
+    checkTargets();
 
     angular.element(document).ready(() => {
         let dependencies: string[] = ['templates'];

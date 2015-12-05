@@ -6,6 +6,7 @@ var filters = [];
 var values = [];
 var directives = [];
 var modules = [];
+var targets = [];
 function Service(name) {
     return classDecorator('Service', name, services);
 }
@@ -115,6 +116,7 @@ function initInjectables(target, key) {
     var params = Reflect.getOwnMetadata('design:paramtypes', target, key);
     var names = params && params.map(function (param) { return /function ([^(]*)/.exec(param.toString())[1]; });
     setInjectables(names, target, key);
+    targets.push(target);
     return names;
 }
 function setInjectables(names, target, key) {
@@ -137,6 +139,19 @@ function getInjectables(target, key) {
             : target[key] && target[key].$inject)
         : target.$inject;
     return injectables;
+}
+function checkTargets() {
+    for (var _i = 0; _i < targets.length; _i++) {
+        var target = targets[_i];
+        if (target.$inject) {
+            for (var _a = 0, _b = target.$inject; _a < _b.length; _a++) {
+                var provider = _b[_a];
+                if (provider === 'Object' || provider === 'Function') {
+                    throw new Error("Check injections for " + target.name + " class (define type or use @Inject)");
+                }
+            }
+        }
+    }
 }
 function setInjectable(index, value, target, key) {
     var injectables = getInjectables(target, key) || initInjectables(target, key);
@@ -168,6 +183,8 @@ function defineModule(target, dependencies) {
 }
 function bootstrap(component) {
     var options = Reflect.getOwnMetadata('options', component);
+    Reflect.defineMetadata('moduleName', options.name + 'Module', component);
+    checkTargets();
     angular.element(document).ready(function () {
         var dependencies = ['templates'];
         for (var _i = 0; _i < modules.length; _i++) {
