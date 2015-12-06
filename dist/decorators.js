@@ -27,7 +27,7 @@ function Directive(name) {
     return propertyDecorator('Directive', name, directives);
 }
 exports.Directive = Directive;
-function Action(name) {
+function ActionHandler(name) {
     var decorator;
     decorator = function (target, key, descriptor) {
         if (!name) {
@@ -38,7 +38,7 @@ function Action(name) {
     };
     return decorator;
 }
-exports.Action = Action;
+exports.ActionHandler = ActionHandler;
 function Component(options) {
     var decorator;
     decorator = function (target) {

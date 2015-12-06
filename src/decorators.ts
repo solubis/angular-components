@@ -45,7 +45,7 @@ function Directive(name: string): PropertyDecorator {
     return propertyDecorator('Directive', name, directives);
 }
 
-function Action(name: number): PropertyDecorator {
+function ActionHandler(name: number): PropertyDecorator {
     let decorator: PropertyDecorator;
 
     decorator = (target: ITarget, key?: string, descriptor?: TypedPropertyDescriptor<any>) => {
@@ -288,4 +288,4 @@ function bootstrap(component: Function) {
     });
 }
 
-export {Component, Inject, Service, Provider, Filter, Directive, Value, Action, bootstrap};
+export {Component, Inject, Service, Provider, Filter, Directive, Value, ActionHandler, bootstrap};
