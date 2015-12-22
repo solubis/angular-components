@@ -1,4 +1,3 @@
-var angular = require('angular');
 require('reflect-metadata');
 var services = [];
 var providers = [];
@@ -31,7 +30,7 @@ function ActionHandler(name) {
     var decorator;
     decorator = function (target, key, descriptor) {
         if (!name) {
-            throw new Error("@Action decorator for " + key + " must contain \"name\"!");
+            throw new Error("@ActionHandler decorator for " + target.constructor['name'] + ":" + key + " must contain Action Name parameter");
         }
         target['handlersMap'] = Object.assign({}, target['handlersMap'], (_a = {}, _a[name] = target[key], _a));
         var _a;
@@ -39,11 +38,22 @@ function ActionHandler(name) {
     return decorator;
 }
 exports.ActionHandler = ActionHandler;
+function StoreListener() {
+    var decorator;
+    decorator = function (target, key, descriptor) {
+        var names = getParamTypeNames(target, key);
+        // todo for each check if Store if (type.prototype instanceof Store)
+        target['storeMap'] = Object.assign({}, target['storeMap'], (_a = {}, _a[names[0]] = target[key], _a));
+        var _a;
+    };
+    return decorator;
+}
+exports.StoreListener = StoreListener;
 function Component(options) {
     var decorator;
     decorator = function (target) {
         if (!options.selector && !options.name) {
-            throw new Error("@Component() for " + target.name + " class must contain \"selector\" or \"name\" property!");
+            throw new Error("@Component() for " + target.name + " class must contain options object with \"selector\" or \"name\" property!");
         }
         options.name = options.name || toCamelCase(options.selector);
         if (options.templateUrl || options.template) {
@@ -75,7 +85,7 @@ function Inject(name) {
     }
     else {
         decorator = function (target, key, descriptor) {
-            initInjectables(target);
+            initInjectables(target, key);
         };
     }
     return decorator;
@@ -84,10 +94,29 @@ exports.Inject = Inject;
 /**
  * Helper functions
  */
+function generateMethodNames(target) {
+    var methodNames = getActionMethodNames();
+    var className = target.name;
+    for (var i = 0; i < methodNames.length; i++) {
+        target.prototype[methodNames[i]].$actionName = className + ":" + methodNames[i];
+    }
+    function getActionMethodNames() {
+        return Object.getOwnPropertyNames(target.prototype)
+            .filter(function (name) {
+            return name !== 'constructor' &&
+                typeof target.prototype[name] === 'function';
+        });
+    }
+}
 function classDecorator(decoratorName, options, array) {
     var decorator;
     decorator = function (target) {
         var name = options && options.name.replace('Provider', '') || target.name.replace('Provider', '');
+        target.name = target.name || name;
+        if (typeof target === 'function') {
+            target.prototype.name = target.name;
+            generateMethodNames(target);
+        }
         if (array) {
             array.push({ name: name, fn: target });
         }
@@ -98,23 +127,31 @@ function classDecorator(decoratorName, options, array) {
 function propertyDecorator(decoratorName, name, array) {
     var decorator;
     decorator = function (target, key, descriptor) {
-        if (!name) {
-            throw new Error(decoratorName + " decorator for " + key + " must contain \"name\"!");
-        }
+        var isTargetConstructor = target.prototype;
+        name = name || key;
         if (array) {
             array.push({ name: name, fn: (descriptor && descriptor.value) || target[key] });
         }
-        initInjectables(target);
+        if (isTargetConstructor) {
+            initInjectables(target);
+        }
     };
     return decorator;
+}
+function getParamTypes(target, key) {
+    return Reflect.getOwnMetadata('design:paramtypes', target, key);
+}
+function getParamTypeNames(target, key) {
+    var params = getParamTypes(target, key);
+    var names = params && params.map(function (param) { return /function ([^(]*)/.exec(param.toString())[1]; });
+    return names;
 }
 function initInjectables(target, key) {
     var injectables = getInjectables(target, key);
     if (injectables) {
         return injectables;
     }
-    var params = Reflect.getOwnMetadata('design:paramtypes', target, key);
-    var names = params && params.map(function (param) { return /function ([^(]*)/.exec(param.toString())[1]; });
+    var names = getParamTypeNames(target, key);
     setInjectables(names, target, key);
     targets.push(target);
     return names;
@@ -157,9 +194,6 @@ function setInjectable(index, value, target, key) {
     var injectables = getInjectables(target, key) || initInjectables(target, key);
     injectables[index] = value;
 }
-function getTargetName(target) {
-    return typeof target === 'function' ? target.name : target.constructor.name;
-}
 function toCamelCase(str) {
     str = str.charAt(0).toLowerCase() + str.substring(1);
     return str.replace(/-([a-z])/ig, function (all, letter) { return letter.toUpperCase(); });
@@ -187,6 +221,7 @@ function bootstrap(component) {
     checkTargets();
     angular.element(document).ready(function () {
         var dependencies = ['templates'];
+        var selector = document.querySelector(options.selector);
         for (var _i = 0; _i < modules.length; _i++) {
             var childModule = modules[_i];
             if (childModule !== component) {
@@ -199,16 +234,20 @@ function bootstrap(component) {
             var directive = directives[_a];
             module.directive(directive.name, directive.fn);
         }
-        for (var _b = 0; _b < services.length; _b++) {
-            var service = services[_b];
+        for (var _b = 0; _b < filters.length; _b++) {
+            var filter = filters[_b];
+            module.filter(filter.name, filter.fn);
+        }
+        for (var _c = 0; _c < services.length; _c++) {
+            var service = services[_c];
             module.service(service.name, service.fn);
         }
-        for (var _c = 0; _c < providers.length; _c++) {
-            var provider = providers[_c];
+        for (var _d = 0; _d < providers.length; _d++) {
+            var provider = providers[_d];
             module.provider(provider.name, provider.fn);
         }
-        for (var _d = 0; _d < values.length; _d++) {
-            var value = values[_d];
+        for (var _e = 0; _e < values.length; _e++) {
+            var value = values[_e];
             module.value(value.name, value.fn);
         }
         try {
@@ -217,7 +256,6 @@ function bootstrap(component) {
         catch (e) {
             angular.module('templates', []);
         }
-        var selector = document.querySelector(options.selector);
         angular.bootstrap(selector, [module.name], {});
     });
 }

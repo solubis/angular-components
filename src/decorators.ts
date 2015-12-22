@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import 'reflect-metadata';
 
 let services: any[] = [];
@@ -6,8 +5,8 @@ let providers: any[] = [];
 let filters: any[] = [];
 let values: any[] = [];
 let directives: any[] = [];
-let modules: ITarget[] = [];
-let targets: ITarget[] = [];
+let modules: IConstructorTarget[] = [];
+let targets: IConstructorTarget[] = [];
 
 export interface IBasicDecoratorOptions {
     name?: string;
@@ -21,7 +20,12 @@ export interface IComponentDecoratorOptions {
     dependencies?: string[];
 }
 
-export interface ITarget extends Function {
+export interface IConstructorTarget extends Function {
+    name: string;
+    prototype: any;
+}
+
+export interface IPrototypeTarget extends Object {
     name: string;
 }
 
@@ -37,7 +41,7 @@ function Filter(name: string): PropertyDecorator {
     return propertyDecorator('Filter', name, filters);
 }
 
-function Value(name: string): PropertyDecorator {
+function Value(name?: string): PropertyDecorator {
     return propertyDecorator('Value', name, values);
 }
 
@@ -45,12 +49,12 @@ function Directive(name: string): PropertyDecorator {
     return propertyDecorator('Directive', name, directives);
 }
 
-function ActionHandler(name: number): PropertyDecorator {
+function ActionHandler(name: string): PropertyDecorator {
     let decorator: PropertyDecorator;
 
-    decorator = (target: ITarget, key?: string, descriptor?: TypedPropertyDescriptor<any>) => {
+    decorator = (target: IPrototypeTarget, key?: string, descriptor?: TypedPropertyDescriptor<any>) => {
         if (!name) {
-            throw new Error(`@Action decorator for ${key} must contain "name"!`);
+            throw new Error(`@ActionHandler decorator for ${target.constructor['name']}:${key} must contain Action Name parameter`);
         }
 
         target['handlersMap'] = Object.assign({}, target['handlersMap'], { [name]: target[key] });
@@ -59,12 +63,26 @@ function ActionHandler(name: number): PropertyDecorator {
     return decorator;
 }
 
+function StoreListener() {
+    let decorator: PropertyDecorator;
+
+    decorator = (target: IPrototypeTarget, key?: string, descriptor?: TypedPropertyDescriptor<any>) => {
+        let names = getParamTypeNames(target, key);
+
+        // todo for each check if Store if (type.prototype instanceof Store)
+
+        target['storeMap'] = Object.assign({}, target['storeMap'], { [names[0]]: target[key] });
+    };
+
+    return decorator;
+}
+
 function Component(options: IComponentDecoratorOptions): ClassDecorator {
     let decorator: ClassDecorator;
 
-    decorator = (target: ITarget) => {
+    decorator = (target: IConstructorTarget) => {
         if (!options.selector && !options.name) {
-            throw new Error(`@Component() for ${target.name} class must contain "selector" or "name" property!`);
+            throw new Error(`@Component() for ${target.name} class must contain options object with "selector" or "name" property!`);
         }
 
         options.name = options.name || toCamelCase(options.selector);
@@ -99,12 +117,12 @@ function Inject(name?: string) {
     let decorator;
 
     if (name) {
-        decorator = (target: ITarget, key: string, index: number) => {
+        decorator = (target: IConstructorTarget, key: string, index: number) => {
             setInjectable(index, name, target, key);
         };
     } else {
-        decorator = (target: ITarget, key?: string, descriptor?: TypedPropertyDescriptor<any>) => {
-            initInjectables(target);
+        decorator = (target: IConstructorTarget, key?: string, descriptor?: TypedPropertyDescriptor<any>) => {
+            initInjectables(target, key);
         };
     }
 
@@ -116,12 +134,36 @@ function Inject(name?: string) {
  * Helper functions
  */
 
+function generateMethodNames(target) {
+    let methodNames = getActionMethodNames();
+    let className = target.name;
+
+    for (let i = 0; i < methodNames.length; i++) {
+        target.prototype[methodNames[i]].$actionName = `${className}:${methodNames[i]}`;
+    }
+
+
+    function getActionMethodNames() {
+        return Object.getOwnPropertyNames(target.prototype)
+            .filter(name =>
+                name !== 'constructor' &&
+                typeof target.prototype[name] === 'function'
+            );
+    }
+}
 
 function classDecorator(decoratorName: string, options: IBasicDecoratorOptions, array: any[]): ClassDecorator {
     let decorator: ClassDecorator;
 
-    decorator = (target: ITarget) => {
+    decorator = (target: IConstructorTarget) => {
         let name = options && options.name.replace('Provider', '') || target.name.replace('Provider', '');
+
+        target.name = target.name || name;
+
+        if (typeof target === 'function') {
+            target.prototype.name = target.name;
+            generateMethodNames(target);
+        }
 
         if (array) {
             array.push({ name, fn: target });
@@ -136,31 +178,42 @@ function classDecorator(decoratorName: string, options: IBasicDecoratorOptions, 
 function propertyDecorator(decoratorName: string, name: string, array?: any[]): PropertyDecorator {
     let decorator: PropertyDecorator;
 
-    decorator = (target: ITarget, key?: string, descriptor?: TypedPropertyDescriptor<any>) => {
-        if (!name) {
-            throw new Error(`${decoratorName} decorator for ${key} must contain "name"!`);
-        }
+    decorator = (target: IPrototypeTarget | IConstructorTarget, key?: string, descriptor?: TypedPropertyDescriptor<any>) => {
+        let isTargetConstructor: boolean = (<IConstructorTarget>target).prototype;
+
+        name = name || key;
 
         if (array) {
             array.push({ name, fn: (descriptor && descriptor.value) || target[key] });
         }
 
-        initInjectables(target);
+        if (isTargetConstructor) {
+            initInjectables(<IConstructorTarget>target);
+        }
     };
 
     return decorator;
 }
 
-function initInjectables(target: ITarget, key?: string) {
+function getParamTypes(target: IConstructorTarget | IPrototypeTarget, key?: string) {
+    return Reflect.getOwnMetadata('design:paramtypes', target, key);
+}
+
+function getParamTypeNames(target: IConstructorTarget | IPrototypeTarget, key?: string) {
+    let params = getParamTypes(target, key);
+    let names: string[] = params && params.map(param => /function ([^(]*)/.exec(param.toString())[1]);
+
+    return names;
+}
+
+function initInjectables(target: IConstructorTarget, key?: string) {
     let injectables = getInjectables(target, key);
 
     if (injectables) {
         return injectables;
     }
 
-    let params = Reflect.getOwnMetadata('design:paramtypes', target, key);
-
-    let names: string[] = params && params.map(param => /function ([^(]*)/.exec(param.toString())[1]);
+    let names = getParamTypeNames(target, key);
 
     setInjectables(names, target, key);
 
@@ -203,14 +256,10 @@ function checkTargets() {
     }
 }
 
-function setInjectable(index: number, value: string, target: ITarget, key?: string) {
+function setInjectable(index: number, value: string, target: IConstructorTarget, key?: string) {
     let injectables = getInjectables(target, key) || initInjectables(target, key);
 
     injectables[index] = value;
-}
-
-function getTargetName(target) {
-    return typeof target === 'function' ? target.name : target.constructor.name;
 }
 
 function toCamelCase(str: string) {
@@ -218,7 +267,7 @@ function toCamelCase(str: string) {
     return str.replace(/-([a-z])/ig, (all, letter) => letter.toUpperCase());
 }
 
-function setModule(target: ITarget, options: IComponentDecoratorOptions): void {
+function setModule(target: IConstructorTarget, options: IComponentDecoratorOptions): void {
     Reflect.defineMetadata('moduleName', options.name + 'Module', target);
 
     modules.push(target);
@@ -230,7 +279,7 @@ function isModule(target: Function, options: IComponentDecoratorOptions): boolea
         (target.prototype.run && typeof target.prototype.run === 'function'));
 }
 
-function defineModule(target: ITarget, dependencies?: string[]): ng.IModule {
+function defineModule(target: IConstructorTarget, dependencies?: string[]): ng.IModule {
     let name = Reflect.getOwnMetadata('moduleName', target);
     let options = Reflect.getOwnMetadata('options', target);
     let module = angular.module(name, [].concat(dependencies || []).concat(options.dependencies || []));
@@ -250,6 +299,7 @@ function bootstrap(component: Function) {
 
     angular.element(document).ready(() => {
         let dependencies: string[] = ['templates'];
+        let selector = document.querySelector(options.selector);
 
         for (let childModule of modules) {
             if (childModule !== component) {
@@ -258,10 +308,14 @@ function bootstrap(component: Function) {
             }
         }
 
-        let module = defineModule(<ITarget>component, dependencies);
+        let module = defineModule(<IConstructorTarget>component, dependencies);
 
         for (let directive of directives) {
             module.directive(directive.name, directive.fn);
+        }
+
+        for (let filter of filters) {
+            module.filter(filter.name, filter.fn);
         }
 
         for (let service of services) {
@@ -282,10 +336,8 @@ function bootstrap(component: Function) {
             angular.module('templates', []);
         }
 
-        let selector = document.querySelector(options.selector);
-
         angular.bootstrap(selector, [module.name], {});
     });
 }
 
-export {Component, Inject, Service, Provider, Filter, Directive, Value, ActionHandler, bootstrap};
+export {Component, Inject, Service, Provider, Filter, Directive, Value, ActionHandler, StoreListener, bootstrap};

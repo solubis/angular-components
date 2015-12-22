@@ -1,5 +1,4 @@
 import * as angular from 'angular';
-import core from './core';
 
 import 'jsrsasign';
 
@@ -9,7 +8,7 @@ import OAuthInterceptor from './security/OAuthInterceptor';
 import QueryStringService from './security/QueryStringService';
 import AuthorizeDirective from './security/AuthorizeDirective';
 
-let module = angular.module('fds.security', [core])
+let module = angular.module('fds.security', [])
 
     .config(($httpProvider, $configProvider, $securityProvider: SecurityServiceProvider) => {
         let config = $configProvider.$get();

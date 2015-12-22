@@ -1,12 +1,11 @@
 var angular = require('angular');
-var core_1 = require('./core');
 require('jsrsasign');
 var SecurityService_1 = require('./security/SecurityService');
 var OAuthTokenService_1 = require('./security/OAuthTokenService');
 var OAuthInterceptor_1 = require('./security/OAuthInterceptor');
 var QueryStringService_1 = require('./security/QueryStringService');
 var AuthorizeDirective_1 = require('./security/AuthorizeDirective');
-var module = angular.module('fds.security', [core_1.default])
+var module = angular.module('fds.security', [])
     .config(function ($httpProvider, $configProvider, $securityProvider) {
     var config = $configProvider.$get();
     $securityProvider.configure(config);
