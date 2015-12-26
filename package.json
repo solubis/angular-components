@@ -1,10 +1,10 @@
 {
     "name": "angular-components",
-    "version": "0.0.1",
-    "registry": "npm",
+    "version": "master",
+    "registry": "github",
     "description": "Angular Components written in Typescript",
     "scripts": {
-        "postinstall": "tsd install; npm link"
+        "postinstall": "npm link; jspm link"
     },
     "repository": {
         "type": "git",
