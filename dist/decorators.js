@@ -59,10 +59,11 @@ function Component(options) {
         if (options.templateUrl || options.template) {
             var directive = {
                 restrict: 'E',
-                scope: {},
+                scope: target.prototype.scope || {},
                 bindToController: true,
                 controller: target,
-                controllerAs: 'ctrl'
+                controllerAs: 'ctrl',
+                link: target.prototype.link || function () { }
             };
             angular.extend(directive, options);
             directives.push({ name: options.name, fn: function () { return directive; } });

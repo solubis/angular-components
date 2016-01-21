@@ -12,9 +12,7 @@ export interface IBasicDecoratorOptions {
     name?: string;
 }
 
-export interface IComponentDecoratorOptions {
-    templateUrl?: string;
-    template?: string;
+export interface IComponentDecoratorOptions extends ng.IDirective {
     selector?: string;
     name?: string;
     dependencies?: string[];
@@ -90,10 +88,11 @@ function Component(options: IComponentDecoratorOptions): ClassDecorator {
         if (options.templateUrl || options.template) {
             let directive = {
                 restrict: 'E',
-                scope: {},
+                scope: target.prototype.scope || {},
                 bindToController: true,
                 controller: target,
-                controllerAs: 'ctrl'
+                controllerAs: 'ctrl',
+                link: target.prototype.link || function() { }
             };
 
             angular.extend(directive, options);

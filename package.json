@@ -14,10 +14,10 @@
     "bugs": {
         "url": "https://github.com/solubis/components/issues"
     },
-    "main": "dist/index.js",
-    "typings": "dist/index.d.ts",
+    "main": "dist/scripts/index.js",
+    "typings": "dist/scripts/index.d.ts",
     "typescript": {
-        "definition": "dist/index.d.ts"
+        "definition": "dist/scripts/index.d.ts"
     },
     "devDependencies": {
         "angular": "*",
@@ -49,7 +49,7 @@
         "systemjs": "*",
         "systemjs-builder": "*",
         "tsd": "*",
-        "typescript": "^1.7.3"
+        "typescript": "^1.7.5"
     },
     "dependencies": {
         "jsrsasign": "*",

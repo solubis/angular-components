@@ -1,9 +1,7 @@
 export interface IBasicDecoratorOptions {
     name?: string;
 }
-export interface IComponentDecoratorOptions {
-    templateUrl?: string;
-    template?: string;
+export interface IComponentDecoratorOptions extends ng.IDirective {
     selector?: string;
     name?: string;
     dependencies?: string[];
