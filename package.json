@@ -1,38 +1,39 @@
 {
-    "name": "angular-components",
-    "version": "0.0.1",
-    "registry": "github",
-    "description": "Angular Components written in Typescript",
-    "scripts": {
-        "start": "node_modules/webpack-dev-server/bin/webpack-dev-server.js --host 0.0.0.0 --port 3000 --hot --inline --no-info",
-        "build": "NODE_ENV=production node node_modules/.bin/webpack && cp demo/*.html dist/"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/solubis/components.git"
-    },
-    "author": "Jerzy Błaszczyk (solubis.com)",
-    "license": "Unlicense",
-    "bugs": {
-        "url": "https://github.com/solubis/components/issues"
-    },
-    "main": "dist/components.js",
-    "typings": "dist/typings/src/index.d.ts",
-    "typescript": {
-        "definition": "dist/typings/src/index.d.ts"
-    },
-    "devDependencies": {
-        "angular": "*",
-        "eslint": "*",
-        "tsd": "*",
-        "typescript": "*",
-        "ts-loader": "^0.7.2",
-        "webpack": "^1.12.9",
-        "webpack-dev-server": "^1.14.0"
-    },
-    "dependencies": {
-        "jsrsasign": "*",
-        "moment": "*",
-        "reflect-metadata": "*"
-    }
+  "name": "angular-components",
+  "version": "0.0.1",
+  "registry": "github",
+  "description": "Angular Components written in Typescript",
+  "scripts": {
+    "start": "node_modules/webpack-dev-server/bin/webpack-dev-server.js --host 0.0.0.0 --port 3000 --hot --inline --no-info",
+    "build": "NODE_ENV=production node node_modules/.bin/webpack && cp demo/*.html dist/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/solubis/components.git"
+  },
+  "author": "Jerzy Błaszczyk (solubis.com)",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/solubis/components/issues"
+  },
+  "main": "dist/components.js",
+  "typings": "dist/typings/src/index.d.ts",
+  "typescript": {
+    "definition": "dist/typings/src/index.d.ts"
+  },
+  "devDependencies": {
+    "angular": "*",
+    "dts-generator": "^1.6.3",
+    "eslint": "*",
+    "ts-loader": "^0.7.2",
+    "tsd": "*",
+    "typescript": "*",
+    "webpack": "^1.12.9",
+    "webpack-dev-server": "^1.14.0"
+  },
+  "dependencies": {
+    "jsrsasign": "*",
+    "moment": "*",
+    "reflect-metadata": "*"
+  }
 }

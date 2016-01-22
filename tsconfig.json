@@ -11,5 +11,5 @@
         "experimentalDecorators": true,
         "outDir": "dist/typings"
     },
-    "exclude": ["dist", "node_modules"]
+    "exclude": ["dist", "node_modules", "demo"]
 }
