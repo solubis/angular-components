@@ -9,7 +9,7 @@
         "sourceMap": true,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "outDir": "dist"
+        "outDir": "dist/typings"
     },
     "exclude": ["dist", "node_modules"]
 }

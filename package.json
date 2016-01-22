@@ -4,6 +4,8 @@
     "registry": "github",
     "description": "Angular Components written in Typescript",
     "scripts": {
+        "start": "node_modules/webpack-dev-server/bin/webpack-dev-server.js --host 0.0.0.0 --port 3000 --hot --inline --no-info",
+        "build": "NODE_ENV=production node node_modules/.bin/webpack && cp demo/*.html dist/"
     },
     "repository": {
         "type": "git",
@@ -14,46 +16,23 @@
     "bugs": {
         "url": "https://github.com/solubis/components/issues"
     },
-    "main": "src/index.ts",
-    "typings": "dist/index.d.ts",
+    "main": "dist/components.js",
+    "typings": "dist/typings/src/index.d.ts",
     "typescript": {
-        "definition": "dist/index.d.ts"
+        "definition": "dist/typings/src/index.d.ts"
     },
     "devDependencies": {
         "angular": "*",
-        "babel-core": "^5.8.25",
-        "browser-sync": "*",
-        "del": "^2.0.2",
         "eslint": "*",
-        "gulp": "*",
-        "gulp-changed": "^1.3.0",
-        "gulp-concat": "^2.6.0",
-        "gulp-htmlhint": "^0.3.0",
-        "gulp-inject": "^3.0.0",
-        "gulp-load-plugins": "^0.10.0",
-        "gulp-cssnano": "*",
-        "gulp-htmlmin": "*",
-        "gulp-ng-annotate": "^1.1.0",
-        "gulp-ng-html2js": "^0.2.0",
-        "gulp-plumber": "^1.0.1",
-        "gulp-rename": "^1.2.2",
-        "gulp-sass": "*",
-        "gulp-tslint": "^3.3.1",
-        "gulp-typescript": "^2.10",
-        "gulp-uglify": "^1.4.1",
-        "gulp-usemin": "^0.3.14",
-        "gulp-util": "^3.0.6",
-        "merge2": "^0.3.6",
-        "require-dir": "^0.3.0",
-        "run-sequence": "^1.1.4",
-        "systemjs": "*",
-        "systemjs-builder": "*",
         "tsd": "*",
-        "typescript": "^1.7.5"
+        "typescript": "*",
+        "ts-loader": "^0.7.2",
+        "webpack": "^1.12.9",
+        "webpack-dev-server": "^1.14.0"
     },
     "dependencies": {
         "jsrsasign": "*",
         "moment": "*",
-        "reflect-metadata": "^0.1.2"
+        "reflect-metadata": "*"
     }
 }

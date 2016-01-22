@@ -85,10 +85,9 @@ function Component(options: IComponentDecoratorOptions): ClassDecorator {
 
         options.name = options.name || toCamelCase(options.selector);
 
-        if (options.templateUrl || options.template) {
+        if (options.selector) {
             let directive = {
-                restrict: 'E',
-                scope: target.prototype.scope || {},
+                scope: {},
                 bindToController: true,
                 controller: target,
                 controllerAs: 'ctrl',
